@@ -1,0 +1,24 @@
+---
+network:
+  version: 2
+  renderer: networkd
+  ethernets:
+    enp0s8:
+      addresses:
+      - 192.168.2.254/24
+    enp0s9:
+      addresses:
+      - 192.168.100.2/24
+      routes:
+      - to: 192.168.101.0/24
+        via: 192.168.100.1
+      - to: 192.168.169.0/24
+        via: 192.168.100.1
+      - to: 192.168.1.0/24
+        via: 192.168.100.1
+    enp0s10:
+      addresses:
+      - 192.168.102.2/24
+      routes:
+      - to: 192.168.3.0/24
+        via: 192.168.102.1

@@ -1,0 +1,125 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+
+Vagrant.configure("2") do |config|
+  
+    
+  # Configure router1 (the router for the attacker)
+  config.vm.define "router" do |a|
+    # a.vm.box = "ubuntu/bionic64"
+    a.vm.box = "ubuntu/focal64"
+    a.vm.hostname = 'router'
+    a.vm.boot_timeout = 600
+    a.vm.network :private_network, ip: "192.168.1.2", virtualbox__intnet: "intnet-1" # To victim
+    a.vm.network :private_network, ip: "192.168.2.2", virtualbox__intnet: "intnet-2" # To VPN Server 
+    a.vm.network :private_network, ip: "192.168.3.2", virtualbox__intnet: "intnet-3" # Webdns server 
+    a.vm.network :private_network, ip: "192.168.4.2", virtualbox__intnet: "intnet-4" # To Attacker
+    
+    a.vm.network "forwarded_port", guest: 22, host: 22114, id: 'ssh'
+    a.ssh.insert_key = true
+    a.vm.provider :virtualbox do |v|
+      v.customize ["modifyvm", :id, "--natdnshostresolver1", "on"]
+      v.customize ["modifyvm", :id, "--memory", 1024]
+      v.customize ["modifyvm", :id, "--cpus", "2"]  
+      v.customize ["modifyvm", :id, "--name", "router1"]
+    end
+    a.vm.provision :shell, path: "./routers/router1/setup_net.sh"
+    a.vm.synced_folder  "./routers/router1/", "/vagrant", disabled: false
+  end
+
+  # Configure Edge machines
+  ## Set up the victim client
+  config.vm.define "victim" do |a|
+    # a.vm.box = "ubuntu/bionic64"
+    a.vm.box = "ubuntu/focal64"
+    a.vm.hostname = 'victim'
+    a.vm.boot_timeout = 600
+    a.vm.network "forwarded_port", guest: 22, host: 22111, id: 'ssh'
+    a.ssh.insert_key = true
+
+    a.vm.network "private_network", ip: "192.168.1.254", virtualbox__intnet: "intnet-1"
+    # a.vm.network "private_network", ip: "172.16.1.2", virtualbox__intnet: "intnet-4"
+    
+    a.vm.provider :virtualbox do |v|
+      v.customize ["modifyvm", :id, "--natdnshostresolver1", "on"]
+      v.customize ["modifyvm", :id, "--memory", 1024]
+      v.customize ["modifyvm", :id, "--cpus", "2"]  
+      v.customize ["modifyvm", :id, "--name", "victim"]
+    end
+
+    a.vm.provision :shell, path: "./edgers/client/setup_net.sh"
+
+    a.vm.provision "shell", inline: <<-SHELL
+      sudo apt-get update
+      sudo apt-get install -y openvpn
+    SHELL
+    a.vm.synced_folder  "./edgers/client/", "/vagrant", disabled: false
+
+  end
+
+  ## Set up the vpn server
+  config.vm.define "vpnserver" do |a|
+    # a.vm.box = "ubuntu/bionic64"
+    a.vm.box = "ubuntu/focal64"
+    a.vm.hostname = 'vpnserver'
+    a.vm.boot_timeout = 600
+    a.vm.network "forwarded_port", guest: 22, host: 22119, id: 'ssh'
+    a.ssh.insert_key = true
+    a.vm.network "private_network", ip: "192.168.2.254", virtualbox__intnet: "intnet-2"
+    a.vm.network "private_network", ip: "192.168.2.250", virtualbox__intnet: "intnet-2"
+    a.vm.provider :virtualbox do |v|
+      v.customize ["modifyvm", :id, "--natdnshostresolver1", "on"]
+      v.customize ["modifyvm", :id, "--memory", 4096]
+      v.customize ["modifyvm", :id, "--cpus", "4"]  
+      v.customize ["modifyvm", :id, "--name", "vpnserver"]
+    end
+    a.vm.provision :shell, path: "./edgers/vpn-server/setup_net.sh"
+    a.vm.synced_folder  "./edgers/vpn-server/", "/vagrant", disabled: false
+  end
+  
+
+  
+  ## Configure the attacker
+  config.vm.define "attacker" do |a|
+    # a.vm.box = "ubuntu/bionic64"
+    a.vm.box = "ubuntu/focal64"
+    a.vm.hostname = 'attacker'
+    a.vm.boot_timeout = 600
+    a.vm.network :private_network, ip: "192.168.4.254", virtualbox__intnet: "intnet-4"
+    a.vm.network "forwarded_port", guest: 22, host: 22169, id: 'ssh'
+    a.vm.provider :virtualbox do |v|
+      v.customize ["modifyvm", :id, "--natdnshostresolver1", "on"]
+      v.customize ["modifyvm", :id, "--memory", 2048]
+      v.customize ["modifyvm", :id, "--cpus", "4"]  
+      v.customize ["modifyvm", :id, "--name", "attacker"]
+    end
+    a.vm.provision :shell, path: "./edgers/attack-client/setup_net.sh"
+    a.vm.synced_folder  "./edgers/attack-client/", "/vagrant", disabled: false
+  end
+  
+  ## Configure the Web/DNS server 
+  config.vm.define "webdnsserver" do |a|
+    # a.vm.box = "ubuntu/bionic64"
+    a.vm.box = "ubuntu/focal64"
+    a.vm.hostname = 'webdnsserver'
+    a.vm.boot_timeout = 600
+    a.vm.network "forwarded_port", guest: 22, host: 22113, id: 'ssh'
+    a.ssh.insert_key = true
+
+    a.vm.network "private_network", ip: "192.168.3.254", virtualbox__intnet: "intnet-3"
+    
+    a.vm.provider :virtualbox do |v|
+      v.customize ["modifyvm", :id, "--natdnshostresolver1", "on"]
+      v.customize ["modifyvm", :id, "--memory", 1024]
+      v.customize ["modifyvm", :id, "--cpus", "2"]  
+      v.customize ["modifyvm", :id, "--name", "webdnsserver"]
+    end
+    
+    a.vm.provision :shell, path: "./edgers/web-server/setup_net.sh"
+    a.vm.provision :shell, path: "./edgers/web-server/dns/install_docker.sh"
+    a.vm.provision :shell, path: "./edgers/web-server/dns/start_dns.sh"
+    a.vm.provision :shell, path: "./edgers/web-server/setup_libtins.sh"
+    a.vm.synced_folder  "./edgers/web-server/", "/vagrant", disabled: false
+  end
+
+end

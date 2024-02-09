@@ -1,0 +1,28 @@
+simple-relay:
+	g++ -O3 -o simple-relay simple-relay.cpp -lpthread -ltins -std=c++11
+
+simple-relay.dbg:
+	g++ -O0 -g -o simple-relay.gdb simple-relay.cpp -lpthread -ltins -std=c++11
+
+full-relay:
+	g++ -O3 -o full-relay full-relay.cpp -lpthread -ltins -std=c++11
+
+basic-http-server:
+	g++ -O3 -o basic-http-server basic-http-server.cpp -lpthread -ltins -std=c++11
+
+fill_udp_ports:
+	g++ -O3 -o fill_udp_ports fill_udp_ports.cpp -lpthread -ltins -std=c++11
+
+txid-bruteforce:
+	g++ -O3 -o txid-bruteforce txid-bruteforce.cpp -lpthread -ltins -std=c++11
+
+
+dns-reroute:
+	g++ -O3 -o dns-reroute dns-reroute.cpp -lpthread -ltins -std=c++11
+
+clean:
+	rm -rf basic-http-server full-relay simple-relay simple-relay.gdb *~
+
+cleanfull:
+	rm -rf  full-relay
+
