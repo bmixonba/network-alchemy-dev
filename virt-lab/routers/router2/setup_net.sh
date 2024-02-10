@@ -13,7 +13,6 @@ echo "net.ipv4.conf.lo.rp_filter=0" >> /etc/sysctl.conf
 echo "net.ipv4.conf.enp0s3.rp_filter=0" >> /etc/sysctl.conf
 echo "net.ipv4.conf.enp0s8.rp_filter=0" >> /etc/sysctl.conf
 echo "net.ipv4.conf.enp0s9.rp_filter=0" >> /etc/sysctl.conf
-echo "net.ipv4.conf.enp0s10.rp_filter=0" >> /etc/sysctl.conf
 
 sysctl -p
 
