@@ -418,11 +418,12 @@ int main(int argc, char** argv) {
 	std::cout << "Starting VPN Relay" << victim_port <<
 		std::endl;
 
-	thread fill_table_thread(do_fill_table);
-	fill_table_thread.detach();
+	// These are causing issues with the attack working. 
+	// thread fill_table_thread(do_fill_table);
+	// fill_table_thread.detach();
 
-	thread sniff_tcp_thread(sniff_tcp_handler);
-	sniff_tcp_thread.detach();
+	// thread sniff_tcp_thread(sniff_tcp_handler);
+	// sniff_tcp_thread.detach();
 
 	thread relay_thread(relay_packet_handler);
 	relay_thread.join();
