@@ -7,6 +7,9 @@ simple-relay.dbg:
 full-relay:
 	g++ -O3 -o full-relay full-relay.cpp -lpthread -ltins -std=c++11
 
+decapsulation:
+	g++ -O3 -o decapsulation decapsulation.cpp -lpthread -ltins -std=c++11
+
 basic-http-server:
 	g++ -O3 -o basic-http-server basic-http-server.cpp -lpthread -ltins -std=c++11
 
@@ -20,9 +23,10 @@ txid-bruteforce:
 dns-reroute:
 	g++ -O3 -o dns-reroute dns-reroute.cpp -lpthread -ltins -std=c++11
 
+
 clean:
-	rm -rf basic-http-server full-relay simple-relay simple-relay.gdb *~
+	rm -rf basic-http-server full-relay simple-relay simple-relay.gdb decapsulation *~
 
 cleanfull:
-	rm -rf  full-relay
+	rm -rf  full-relay decapsulation
 
