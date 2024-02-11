@@ -148,7 +148,6 @@ bool _sniff_website_request_handler(PDU &some_pdu) {
 	const TCP &tcp_req = some_pdu.rfind_pdu<TCP>();
 	unsigned short vport;
 //define IPPROTO_TCP 6 
-        std::cout << "_sniff_website_request_handler" << std::endl;
 	if (ip.src_addr() == victim_ip && ip.protocol() == IPPROTO_TCP &&
 			tcp_req.dport()==https_port) {
 		vport = some_pdu.rfind_pdu<TCP>().sport();
@@ -196,6 +195,7 @@ void do_fill_table() {
                         tcp.set_flag(TCP::SYN, 1); 
 			sender.send(pkt, iface);
                 }
+		usleep(10000000);
         }
 }
 
