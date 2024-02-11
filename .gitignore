@@ -4,3 +4,5 @@ Tla/*/
 *.launch
 *.st
 *.cfg
+virt-lab/.vagrant/
+virt-lab-exit/.vagrant/
