@@ -29,3 +29,9 @@ Add the following invariant for the ATIP attack.
 ```
 ATIPInv=FALSE
 ```
+## Eviction Reroute
+
+Add the following invariant for the Eviction Reroute attack.
+```
+EvictionReroute=FALSE
+```
