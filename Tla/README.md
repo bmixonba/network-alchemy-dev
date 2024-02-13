@@ -35,3 +35,9 @@ Add the following invariant for the Eviction Reroute attack.
 ```
 EvictionReroute=FALSE
 ```
+
+## Port Scan
+
+Add the following invariant for the Port Scan attack.
+```
+PortScanInv=FALSE
