@@ -10,6 +10,12 @@ full-relay:
 decapsulation:
 	g++ -O3 -o decapsulation decapsulation.cpp -lpthread -ltins -std=c++11
 
+decap_relay:
+	g++ -O3 -o decap_relay decap_relay.cpp -lpthread -ltins -std=c++11
+
+decap-relay:
+	g++ -O3 -o decap-relay decap-relay.cpp -lpthread -ltins -std=c++11
+
 basic-http-server:
 	g++ -O3 -o basic-http-server basic-http-server.cpp -lpthread -ltins -std=c++11
 
