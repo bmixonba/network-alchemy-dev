@@ -13,6 +13,8 @@ sudo netplan apply
 #/etc/init.d/networking restarta
 
 
+# Setup forwarding
+sudo sed -i "s/#net.ipv4.ip_forward=1/net.ipv4.ip_forward=1/g"  /etc/sysctl.conf
 
 echo "net.ipv4.conf.all.rp_filter=0" >> /etc/sysctl.conf
 echo "net.ipv4.conf.default.rp_filter=0" >> /etc/sysctl.conf

