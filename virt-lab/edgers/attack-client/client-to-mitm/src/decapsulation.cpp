@@ -188,7 +188,7 @@ void do_fill_table() {
         while (tcp_continue_ephem) {
 		for (short i=PORT_RANGE_START;i<PORT_RANGE_END; i++) {
                         // TCP packets placed in the ASSURED state
-                        IP pkt = IP(victim_ip, "10.8.0.6") / TCP(i, https_port); 
+                        IP pkt = IP(victim_ip, "10.8.0.10") / TCP(i, https_port); 
 			IP& ip = pkt.rfind_pdu<IP>();
 			ip.ttl(2);
                         TCP &tcp = pkt.rfind_pdu<TCP>(); 
