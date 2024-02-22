@@ -5,7 +5,11 @@ network:
   ethernets:
     enp0s8:
       addresses:
+      - fd01::fe/8
       - 192.168.1.254/24
       routes:
       - to: 192.168.0.0/16
         via: 192.168.1.2
+      - to: fd00::/8
+        via: fd01::2
+        

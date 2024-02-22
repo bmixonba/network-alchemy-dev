@@ -11,4 +11,4 @@ LAN_IP=192.168.254.254
 
 
 iptables -t nat -A PREROUTING --dst $INET_IP -p tcp --dport 80 -j DNAT --to-destination $BB_IP
-iptables -t nat -A POSTROUTING -p tcp --dst $BB_IP --dport 80 -j SNAT --to-source $LAN_IP
+iptables -t nat -A POSTROUTING -p tcp --dst $BB_IP --dport 80 -j SNAT --to-source $INET_IP

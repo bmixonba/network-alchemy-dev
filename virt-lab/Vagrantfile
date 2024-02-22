@@ -10,10 +10,11 @@ Vagrant.configure("2") do |config|
     a.vm.box = "ubuntu/focal64"
     a.vm.hostname = 'router1'
     a.vm.boot_timeout = 600
-    a.vm.network :private_network, ip: "192.168.1.2", virtualbox__intnet: "intnet-1" # To victim
+    a.vm.network :private_network, ip: "192.168.1.2", virtualbox__intnet: "intnet-1", auto_config: false # To victim
     a.vm.network :private_network, ip: "192.168.2.2", virtualbox__intnet: "intnet-2" # To VPN Server 
     a.vm.network :private_network, ip: "192.168.3.2", virtualbox__intnet: "intnet-3" # Webdns server 
     a.vm.network :private_network, ip: "192.168.4.2", virtualbox__intnet: "intnet-4" # To Attacker
+
     
     a.vm.network "forwarded_port", guest: 22, host: 22111, id: 'ssh'
     a.ssh.insert_key = true

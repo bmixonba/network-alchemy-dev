@@ -7,6 +7,7 @@
 apt-get update
 sudo apt-get install openvpn
 sudo apt install net-tools
+/vagrant/remove_ipv6.sh
 sudo cp /vagrant/50-vagrant.yaml /etc/netplan/
 sudo netplan apply
 

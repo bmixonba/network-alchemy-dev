@@ -91,7 +91,7 @@ sudo sed -i "s/;duplicate-cn/duplicate-cn/g"  /etc/openvpn/server.conf
 #sudo sed -i "s/;push \"redirect-gateway def1 bypass-dhcp\"/push \"redirect-gateway def1 bypass-dhcp\"/g"  /etc/openvpn/server.conf
 #sudo sed -i "s/;push \"dhcp-option DNS 208.67.222.222\"/push \"dhcp-option DNS 208.67.222.222\"/g"  /etc/openvpn/server.conf
 #sudo sed -i "s/;push \"dhcp-option DNS 208.67.220.220\"/push \"dhcp-option DNS 208.67.220.220\"/g"  /etc/openvpn/server.conf
-sudo sed -i 's/;local a\.b\.c\.d/local 192.168.2.254/g' /etc/openvpn/server.conf
+sudo sed -i 's/;local a\.b\.c\.d/local 192.168.2.254\nlocal fd02::fe/g' /etc/openvpn/server.conf
 
 sudo sed -i "s/dh dh2048.pem/dh dh.pem/g"  /etc/openvpn/server.conf
 

