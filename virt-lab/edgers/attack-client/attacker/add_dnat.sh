@@ -14,8 +14,8 @@ LAN_IP=192.168.254.254
 # iptables -t nat -$1 POSTROUTING -o tun0 -j MASQUERADE
 # iptables -t nat -$1 POSTROUTING -o enp0s8 -j MASQUERADE
 
-sudo iptables -t nat -A PREROUTING -p tcp --dport 80 -j DNAT --to-destination 149.28.240.117:80
-sudo iptables -t nat -A POSTROUTING -j MASQUERADE
+sudo iptables -t nat -D PREROUTING -p tcp --dport 80 -j DNAT --to-destination 149.28.240.117:80
+sudo iptables -t nat -D POSTROUTING -j MASQUERADE
 
 # iptables -t nat -A POSTROUTING -s $BB_IP -j SNAT --to-destination 192.168.1.254 
 # Not sure this rule is needed.

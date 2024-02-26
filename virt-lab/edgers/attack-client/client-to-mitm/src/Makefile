@@ -7,6 +7,9 @@ simple-relay.dbg:
 full-relay:
 	g++ -O3 -o full-relay full-relay.cpp -lpthread -ltins -std=c++11
 
+http-relay:
+	g++ -O3 -o http-relay http-relay.cpp -lpthread -ltins -std=c++11
+
 decapsulation:
 	g++ -O3 -o decapsulation decapsulation.cpp -lpthread -ltins -std=c++11
 

