@@ -1,3 +1,8 @@
+# Overview
+
+Each attack has its own Vagrantfile for ease of configuration. The attack descriptions
+are located in the `Attack`` directory.
+
 # virt-lab
 
 VM lab environment for perform attacks. This implementation is a minimal deployment for

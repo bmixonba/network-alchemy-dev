@@ -1,0 +1,13 @@
+[Match]
+Name=enp0s8
+
+[Network]
+Gateway=fd12:2345:6789:1::2
+DNS=fd12:2345:6789:1::2
+
+[Address]
+Address=fd12:2345:6789:1::fe/64
+
+[Route]
+Destination=fd12:2345:6789:1::2
+Scope=global

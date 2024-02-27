@@ -11,10 +11,17 @@ Vagrant.configure("2") do |config|
     a.vm.hostname = 'router1'
     a.vm.boot_timeout = 600
     a.vm.network :private_network, ip: "192.168.1.2", virtualbox__intnet: "intnet-1", auto_config: false # To victim
+    # a.vm.network :private_network, ip: "fd12:2345:6789:1::2", virtualbox__intnet: "intnet-1", auto_config: false # To victim
+
     a.vm.network :private_network, ip: "192.168.2.2", virtualbox__intnet: "intnet-2" # To VPN Server 
+    # a.vm.network :private_network, ip: "fd12:2345:6789:2::2", virtualbox__intnet: "intnet-2" # Webdns server 
+
     a.vm.network :private_network, ip: "192.168.3.2", virtualbox__intnet: "intnet-3" # Webdns server 
+    # a.vm.network :private_network, ip: "fd12:2345:6789:3::2", virtualbox__intnet: "intnet-3" # Webdns server 
+
     # a.vm.network :private_network, ip: "192.168.4.2", virtualbox__intnet: "intnet-4" # To Attacker
     a.vm.network :private_network, ip: "192.168.254.2", virtualbox__intnet: "intnet-254" # To attacker
+    # a.vm.network :private_network, ip: "fd12:2345:6789:fe::2", virtualbox__intnet: "intnet-254" # To attacker
     
     a.vm.network "forwarded_port", guest: 22, host: 22111, id: 'ssh'
     a.ssh.insert_key = true
@@ -38,7 +45,8 @@ Vagrant.configure("2") do |config|
     a.vm.network "forwarded_port", guest: 22, host: 22112, id: 'ssh'
     a.ssh.insert_key = true
 
-    a.vm.network "private_network", ip: "192.168.1.254", virtualbox__intnet: "intnet-1"
+    a.vm.network "private_network", ip: "192.168.1.254", virtualbox__intnet: "intnet-1", auto_config: false
+    # a.vm.network "private_network", ip: "fd12:2345:6789:1::fe", virtualbox__intnet: "intnet-1", auto_config: false
     # a.vm.network "private_network", ip: "172.16.1.2", virtualbox__intnet: "intnet-4"
     
     a.vm.provider :virtualbox do |v|
@@ -66,8 +74,10 @@ Vagrant.configure("2") do |config|
     a.vm.boot_timeout = 600
     a.vm.network "forwarded_port", guest: 22, host: 22114, id: 'ssh'
     a.ssh.insert_key = true
-    a.vm.network :private_network, ip: "192.168.254.3", virtualbox__intnet: "intnet-254" # To attacker
+    a.vm.network :private_network, ip: "192.168.254.3", virtualbox__intnet: "intnet-254", auto_config: false # To attacker
+    # a.vm.network :private_network, ip: "fd12:2345:6789:fe::3", virtualbox__intnet: "intnet-254" # To attacker
     
+
     a.vm.provider :virtualbox do |v|
       v.customize ["modifyvm", :id, "--natdnshostresolver1", "on"]
       v.customize ["modifyvm", :id, "--memory", 1024]
@@ -86,7 +96,8 @@ Vagrant.configure("2") do |config|
     a.vm.box = "ubuntu/focal64"
     a.vm.hostname = 'attacker'
     a.vm.boot_timeout = 600
-    a.vm.network :private_network, ip: "192.168.254.254", virtualbox__intnet: "intnet-254" # To router2
+    a.vm.network :private_network, ip: "192.168.254.254", virtualbox__intnet: "intnet-254", auto_config: false # To router2
+    # a.vm.network :private_network, ip: "fd12:2345:6789:fe::fe", virtualbox__intnet: "intnet-254" # To attacker
     a.vm.network "forwarded_port", guest: 22, host: 22115, id: 'ssh'
     a.vm.provider :virtualbox do |v|
       v.customize ["modifyvm", :id, "--natdnshostresolver1", "on"]
@@ -106,7 +117,8 @@ Vagrant.configure("2") do |config|
     a.vm.boot_timeout = 600
     a.vm.network "forwarded_port", guest: 22, host: 22113, id: 'ssh'
     a.ssh.insert_key = true
-    a.vm.network "private_network", ip: "192.168.2.254", virtualbox__intnet: "intnet-2"
+    a.vm.network "private_network", ip: "192.168.2.254", virtualbox__intnet: "intnet-2", auto_config: false
+    # a.vm.network "private_network", ip: "fd12:2345:6789:2::fe", virtualbox__intnet: "intnet-2", auto_config: false
     # a.vm.network "private_network", ip: "192.168.2.250", virtualbox__intnet: "intnet-2"
     a.vm.provider :virtualbox do |v|
       v.customize ["modifyvm", :id, "--natdnshostresolver1", "on"]
@@ -128,7 +140,8 @@ Vagrant.configure("2") do |config|
     a.vm.network "forwarded_port", guest: 22, host: 22116, id: 'ssh'
     a.ssh.insert_key = true
 
-    a.vm.network "private_network", ip: "192.168.3.254", virtualbox__intnet: "intnet-3" # To router1 
+    a.vm.network "private_network", ip: "192.168.3.254", virtualbox__intnet: "intnet-3", auto_config: false # To router1 
+    # a.vm.network "private_network", ip: "fd12:2345:6789:3::fe", virtualbox__intnet: "intnet-3"
     
     a.vm.provider :virtualbox do |v|
       v.customize ["modifyvm", :id, "--natdnshostresolver1", "on"]
