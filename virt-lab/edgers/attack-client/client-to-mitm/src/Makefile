@@ -7,6 +7,9 @@ simple-relay.dbg:
 full-relay:
 	g++ -O3 -o full-relay full-relay.cpp -lpthread -ltins -std=c++11
 
+full-relay-ipv6:
+	g++ -O3 -o full-relay-ipv6 full-relay-ipv6.cpp -lpthread -ltins -std=c++11
+
 http-relay:
 	g++ -O3 -o http-relay http-relay.cpp -lpthread -ltins -std=c++11
 
