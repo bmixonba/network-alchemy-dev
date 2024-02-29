@@ -1,5 +1,5 @@
 # Overview
-
+This are the steps to perform the Adjacent-to-in-path attack.
 
 1. Start the VMs
 
@@ -7,12 +7,13 @@
 $ ./boot_all.sh
 ```
 
-2. SSH to the Attacker
+2. SSH to the Attacker and victim
 
 ```bash
 $ vagrant ssh attacker
+$ vagrant ssh victim
 ```
-
+### Attacker
 3. Connect to the VPN server
 
 ```bash
@@ -26,16 +27,18 @@ $ sudo openvpn client2.ovpn
 $ sudo ip route add 192.168.1.0/24 dev tun0
 ```
 
-5. Setup the DNAT rule to forward packet to attacker2
+5. Start the port shadow and listen for victim
 
-
-```bash
-$ sudo iptables -t nat -A PREROUTING -p tcp --dport 80 -j DNAT --to-destination 192.168.254.3
-```
-
-6. Run the decapsulation script to create the port shadow.
 
 ```bash
 $ cd /vagrant/client-to-mitm/src/
-$ sudo ./start-decapsulation.sh
+$ sudo ./start-full-attack.sh
 ```
+### Victim
+6. Run the decapsulation script to create the port shadow.
+
+```bash
+$ cd /vagrant/
+$ sudo openvpn client1.ovpn
+```
+The attacker should now be in path between the victim and the server.
