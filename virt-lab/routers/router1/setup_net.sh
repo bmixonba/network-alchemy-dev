@@ -1,7 +1,8 @@
 #!/bin/bash
 #
 
-apt-get update
+sudo apt-get update
+sudo apt install nmap conntrack
 
 sed -i "s/#VAGRANT-END/up route add -net 192.168.0.0\/16 gw 192.168.1.254 dev enp0s8/g" /etc/network/interfaces
 # /vagrant/remove_ipv6.sh

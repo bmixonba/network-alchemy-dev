@@ -112,6 +112,7 @@ to be routed to them. When this happens, all the victims packets are routed thro
 
 ##### Formal Model
 
+The formal model tests mitigations against the ATIP attack.
 
 #### Main Result 2: Decasulation
 
@@ -125,6 +126,59 @@ The eviction reroute attack, described in section 3.3, permits an attacker to fo
 #### Main Result 4: Port Scan
 
 The port scan attack, described in section 3.4, permits an attacker to port scan a victim behind the VPN server. The results are described in section 4.2.6.
+
+##### Attack code
+
+The following steps will reproduce the attack.
+
+1. SSH into `attacker`
+
+```bash
+
+$ vagrant ssh attacker
+
+```
+
+2. Establish a VPN connection to the VPN Server
+
+``` bash
+$ cd /vagrant
+
+$ sudo openvpn client2.ovpn
+```
+
+3. In a second terminal make sure packets are routed to a machine under the attacker's control
+
+```bash
+
+$ sudo ip route add 192.169.3.0/24
+
+```
+
+4. From `attacker`, send packets to the machine
+
+```bash
+
+sudo ./udp_portscan_internal.sh
+
+```
+
+5. SSH to `router1`
+
+```bash
+$ vagrant ssh router1
+```
+
+6. Send packets from `router1` to `vpnserver` that match `attacker`'s packets from step 4.
+
+```bash
+$ sudo ./udp_portscan_external.sh
+```
+
+7.  Disconnect `attacker` from the VPN server (Ctrl-c in the terminal from Step 2.)
+
+
+
 
 ### Experiments
 List each experiment the reviewer has to execute. Describe:
