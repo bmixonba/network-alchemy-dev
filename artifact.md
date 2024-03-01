@@ -129,6 +129,171 @@ The port scan attack, described in section 3.4, permits an attacker to port scan
 
 ##### Attack code
 
+
+
+### Experiments
+List each experiment the reviewer has to execute. Describe:
+ - How to execute it in detailed steps.
+ - What the expected result is.
+ - How long it takes and how much space it consumes on disk. (approximately)
+ - Which claim and results does it support, and how.
+
+#### Experiment 1: ATIP
+Provide a short explanation of the experiment and expected results.
+Describe thoroughly the steps to perform the experiment and to collect and organize the results as expected from your paper.
+Use code segments to support the reviewers, e.g.,
+```bash
+python experiment_1.py
+```
+
+To reproduce the ATIP attack, execute the following steps:
+
+1. Connect to `attacker`
+
+```bash
+
+$ vagrant ssh attacker
+
+``` 
+
+2. Connect from `attacker` to `vpnserver`
+
+```bash
+
+$ cd /vagrant
+
+$ sudo openvpn /vagrant/client2.ovpn
+
+```
+
+3. Force packets to `victim` through the tunnel.
+
+```bash
+
+$ sudo /vagrant/add_victim_route.sh
+
+```
+
+4. Start the attack code.
+
+```bash
+
+$ cd /vagrant/client-to-mitm/src/
+
+$ ./start-full-attack.sh 
+Bound udp port
+Starting Port fill
+Sniffing VPN Request
+
+```
+
+5. Connect to `victim`
+
+```bash
+
+$ vagrant ssh victim
+
+```
+
+6. Connect to `vpnserver`
+
+```bash
+
+$ cd /vagrant
+
+$ sudo openvpn /vagrant/client1.ovpn
+
+```
+
+You should see output in `attacker`'s terminal similar to the following:
+
+```bash
+
+$ ./start-full-attack.sh                                                                          
+Bound udp port                                                                                                                                
+Starting Port fill                                                                                                                            
+Sniffing VPN Request                                                                                                                          
+packet from victim recd                                                                                                                       
+Victim sport=52655                                                                                                                            
+Done, victim sport is 52655                                                                                                                   
+Starting VPN Relay52655                                                                                                                       
+Received victim packet to vpn server: src=192.168.1.254:52655, dst=10.8.0.6:1194:82
+Victim Port Fill Complete                                                                                                                     
+Received vpn packet to victim: src=192.168.2.254:1194, dst=192.168.254.254:52655   
+Received victim packet to vpn server: src=192.168.1.254:52655, dst=10.8.0.6:1194:90 
+Received victim packet to vpn server: src=192.168.1.254:52655, dst=10.8.0.6:1194:359
+Received vpn packet to victim: src=192.168.2.254:1194, dst=192.168.254.254:52655   
+Received vpn packet to victim: src=192.168.2.254:1194, dst=192.168.254.254:52655
+Received vpn packet to victim: src=192.168.2.254:1194, dst=192.168.254.254:52655   
+Received victim packet to vpn server: src=192.168.1.254:52655, dst=10.8.0.6:1194:90
+Received victim packet to vpn server: src=192.168.1.254:52655, dst=10.8.0.6:1194:90
+Received victim packet to vpn server: src=192.168.1.254:52655, dst=10.8.0.6:1194:1188
+Received victim packet to vpn server: src=192.168.1.254:52655, dst=10.8.0.6:1194:1176
+Received victim packet to vpn server: src=192.168.1.254:52655, dst=10.8.0.6:1194:445
+Received vpn packet to victim: src=192.168.2.254:1194, dst=192.168.254.254:52655   
+Received vpn packet to victim: src=192.168.2.254:1194, dst=192.168.254.254:52655
+
+```
+
+If you run the ```conntrack -L``` command on `vpnserver` you should see _two_ vpn connection from
+`attacker`, like this:
+
+
+```bash
+
+# conntrack -L
+udp      17 119 src=192.168.254.254 dst=192.168.2.254 sport=52655 dport=1194 src=192.168.2.254 dst=192.168.254.254 sport=1194 dport=52655 [ASSURED] mark=0 use=1
+udp      17 119 src=10.8.0.6 dst=192.168.1.254 sport=1194 dport=52655 src=192.168.1.254 dst=192.168.2.254 sport=52655 dport=1194 [ASSURED] mark=0 use=1
+tcp      6 431999 ESTABLISHED src=10.0.2.2 dst=10.0.2.15 sport=36790 dport=22 src=10.0.2.15 dst=10.0.2.2 sport=22 dport=36790 [ASSURED] mark=0 use=1
+udp      17 119 src=192.168.254.254 dst=192.168.2.254 sport=45061 dport=1194 src=192.168.2.254 dst=192.168.254.254 sport=1194 dport=45061 [ASSURED] mark=0 use=1
+
+```
+
+This confirms that the attack succeeded.
+
+To test the mitigation, perform the following steps
+
+1. Connect to `vpnserver`
+
+```bash
+
+$ vagrant ssh vpnserver
+
+```
+
+2. Delete the old `MASQUERADE` rule
+
+```bash
+
+$ /vagrant/delete_insecure_iptables_rule.sh # sudo -D POSTROUTING -s 10.0.0.0/8 -o enp0s8 -j MASQUERADE 
+
+```
+
+3. Add the new `SNAT` rule
+
+
+```bash
+
+$ /vagrant/mitigate_atip.sh # sudo -A POSTROUTING -s 10.0.0.0/8  -j SNAT --to-source 192.168.2.133
+
+```
+
+4. If you repeat the attack now, it will fail.
+
+##### Formal Model
+
+#### Experiment 2: Decapsulation
+
+##### Attack code
+
+#### Experiment 3: Eviction Reroute 
+
+##### Attack Code
+
+##### Formal Model
+
+#### Experiment 3: Port Scan
+
 The following steps will reproduce the attack.
 
 1. SSH into `attacker`
@@ -211,31 +376,6 @@ $ sudo /vagrant/add_route.sh
 
 11. If you look on the `router1` terminal, you should see ICMP `port unreachable` messages. If you take
 a packet capture on `victim` you should see the packets from `router1` being sent to the victim. This confirms the attack.
-
-
-### Experiments
-List each experiment the reviewer has to execute. Describe:
- - How to execute it in detailed steps.
- - What the expected result is.
- - How long it takes and how much space it consumes on disk. (approximately)
- - Which claim and results does it support, and how.
-
-#### Experiment 1: Name
-Provide a short explanation of the experiment and expected results.
-Describe thoroughly the steps to perform the experiment and to collect and organize the results as expected from your paper.
-Use code segments to support the reviewers, e.g.,
-```bash
-python experiment_1.py
-```
-#### Experiment 2: Name
-...
-
-#### Experiment 3: Name
-#### Experiment 3: Port Scan
-
-##### Attack code
-
-As described about, you should see packets being routed to `victim`.
 
 
 ...
