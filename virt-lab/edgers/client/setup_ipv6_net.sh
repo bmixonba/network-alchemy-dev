@@ -13,8 +13,8 @@ sudo cp /vagrant/50-vagrant.yaml /etc/netplan/
 sudo netplan apply
 
 # Configure IPv6
-sudo cp /vagrant/ipv6-config/enp0s8.network /etc/systemd/network/
-sudo systemctl restart systemd-networkd
+# sudo cp /vagrant/ipv6-config/enp0s8.network /etc/systemd/network/
+# sudo systemctl restart systemd-networkd
 
 # /vagrant/remove_wrong_ipv6_rules
 echo "net.ipv4.conf.all.rp_filter=0" >> /etc/sysctl.conf

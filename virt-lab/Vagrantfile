@@ -118,6 +118,7 @@ Vagrant.configure("2") do |config|
     a.vm.network "forwarded_port", guest: 22, host: 22113, id: 'ssh'
     a.ssh.insert_key = true
     a.vm.network "private_network", ip: "192.168.2.254", virtualbox__intnet: "intnet-2", auto_config: false
+    a.vm.network "private_network", ip: "192.168.2.133", virtualbox__intnet: "intnet-2", auto_config: false
     # a.vm.network "private_network", ip: "fd12:2345:6789:2::fe", virtualbox__intnet: "intnet-2", auto_config: false
     # a.vm.network "private_network", ip: "192.168.2.250", virtualbox__intnet: "intnet-2"
     a.vm.provider :virtualbox do |v|

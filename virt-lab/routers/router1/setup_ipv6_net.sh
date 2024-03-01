@@ -11,8 +11,11 @@ cat /etc/netplan/50-vagrant.ipv6.yaml
 sudo netplan apply
 
 # Configure IPv6
-sudo cp /vagrant/ipv6-config/enp0s8.network /etc/systemd/network/
-sudo systemctl restart systemd-networkd
+# sudo cp /vagrant/ipv6-config/enp0s8.network /etc/systemd/network/enp0s8.network
+# sudo cp /vagrant/ipv6-config/enp0s9.network /etc/systemd/network/enp0s9.network
+# sudo cp /vagrant/ipv6-config/enp0s10.network /etc/systemd/network/enp0s10.network
+# sudo cp /vagrant/ipv6-config/enp0s16.network /etc/systemd/network/enp0s16.network
+# sudo systemctl restart systemd-networkd
 # /vagrant/remove_wrong_ipv6_rules
 # apt-get update
 apt-get install traceroute # quagga quagga-doc traceroute

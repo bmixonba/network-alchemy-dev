@@ -36,7 +36,7 @@ $ sudo ip route add 192.168.1.0/24 dev tun0
 $ sudo iptables -t nat -A PREROUTING -p tcp --dport 80 -j DNAT --to-destination 192.168.254.4
 ```
 
-6. Run the decapsulation script to create the port shadow.
+6. Run the decapsulation script to create the port shadow on attacker 1.
 
 ```bash
 

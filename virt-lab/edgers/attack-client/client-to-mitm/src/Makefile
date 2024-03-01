@@ -1,11 +1,18 @@
 simple-relay:
 	g++ -O3 -o simple-relay simple-relay.cpp -lpthread -ltins -std=c++11
+	
+
 
 simple-relay.dbg:
 	g++ -O0 -g -o simple-relay.gdb simple-relay.cpp -lpthread -ltins -std=c++11
 
 full-relay:
 	g++ -O3 -o full-relay full-relay.cpp -lpthread -ltins -std=c++11
+bind_ipv6:
+	g++ -O3 -o bind_ipv6 bind_ipv6.cpp -lpthread -ltins -std=c++11
+
+test-sender-ipv6:
+	g++ -O3 -o test-sender-ipv6 test-sender-ipv6.cpp -lpthread -ltins -std=c++11
 
 full-relay-ipv6:
 	g++ -O3 -o full-relay-ipv6 full-relay-ipv6.cpp -lpthread -ltins -std=c++11

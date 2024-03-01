@@ -7,7 +7,7 @@ sudo cp /vagrant/50-vagrant.ipv6.yaml /etc/netplan/
 sudo netplan apply
 
 # Configure IPv6
-sudo cp /vagrant/ipv6-config/enp0s8.network /etc/systemd/network/
+sudo cp /vagrant/ipv6-config/enp0s8.network /etc/systemd/network/enp0s8.network
 sudo systemctl restart systemd-networkd
 # /vagrant/remove_wrong_ipv6_rules
 echo "net.ipv4.ip_forward=1" >> /etc/sysctl.conf

