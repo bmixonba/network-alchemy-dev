@@ -6,9 +6,7 @@ are located in the `Attack`` directory.
 # virt-lab
 
 VM lab environment for perform attacks. This implementation is a minimal deployment for
-doing testing the attacks on a laptop with 16 GB RAM and 4 processors. The full 7 VM network
-can be deployed by using the Vagrant.bignet file. Some modifications may be required for
-that to work as I have not tested in some time.
+doing testing the attacks on a laptop with 16 GB RAM and 4 processors. 
 
 ### Requirements
 
