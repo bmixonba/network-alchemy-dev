@@ -18,7 +18,7 @@ echo "net.ipv4.conf.enp0s8.rp_filter=0" >> /etc/sysctl.conf
 
 sysctl -p
 sudo apt-get update -y
-sudo apt install net-tools dos2unix -y
+sudo apt install net-tools dos2unix ipython3 python3-scapy -y
 sudo cp /vagrant/radvd.conf /etc/radvd.conf
 sudo dos2unix /etc/radvd.conf
 sudo apt install radvd -y

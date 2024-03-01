@@ -3,8 +3,9 @@
 
 
 
+
 apt-get update
-apt install net-tools traceroute hping3 
+apt install net-tools traceroute hping3 ipython3 python3-scapy
 # /vagrant/remove_ipv6.sh
 # sudo ip -6 route flush table all
 sudo cp /vagrant/50-vagrant.yaml /etc/netplan/
