@@ -209,6 +209,8 @@ $ sudo /vagrant/add_route.sh
 
 ```
 
+11. If you look on the `router1` terminal, you should see ICMP `port unreachable` messages. If you take
+a packet capture on `victim` you should see the packets from `router1` being sent to the victim. This confirms the attack.
 
 
 ### Experiments
@@ -229,11 +231,26 @@ python experiment_1.py
 ...
 
 #### Experiment 3: Name
+#### Experiment 3: Port Scan
+
+##### Attack code
+
+As described about, you should see packets being routed to `victim`.
+
+
 ...
 
 ## Limitations
 
+### OpenVPN and Linux Only
 We included only OpenVPN as the VPN target, though our results also include WireGuard and OpenConnect. All of the VPNs we tested (OpenVPN, WireGuard, and OpenConnect), use Netfilter (in the case of Linux based systems), which is what our attacks are actually targeting, OpenVPN was the similast to automate and provision so we focused on it for this artifact. For operating systems, we only included Linux and not FreeBSD. This is because we were unable to find a suitable FreeBSD vagrant box and since our provisioning code uses Vagrant, and since frewer of the attacks actually work on FreeBSD, we focused on Linux.
+
+### IPv4 Only
+
+We tested the attacks against both IPv4 and IPv6. We include only IPv4 in this artifact for two reasons. First, because the connection tracking frameworks are shared between IPv4 and IPv6 testing both is redundent. Second, we encountered several issues when configuing IPv6 interfaces and routing that we cannot currently attribute to a cause but that make building the testing environment and code more labor intensive. 
+
+We plan to include WireGuard, OpenConnect, and IPv6 support in future iterations of this framework.
+
 
 ## Notes on Reusability
 
