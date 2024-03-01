@@ -105,8 +105,13 @@ Our paper covers four attacks against VPNs, such as OpenVPN, that use stateful c
 
 #### Main Result 1: ATIP 
 
+##### Attack code
+
 The ATIP attack, described in section 3.1, permits an attacker connected to the VPN server to force a victim's VPN connection request
 to be routed to them. When this happens, all the victims packets are routed through the attacker. The results are described in section 4.2.1.
+
+##### Formal Model
+
 
 #### Main Result 2: Decasulation
 
