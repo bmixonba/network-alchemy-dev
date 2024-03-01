@@ -142,16 +142,18 @@ $ vagrant ssh attacker
 2. Establish a VPN connection to the VPN Server
 
 ``` bash
+
 $ cd /vagrant
 
-$ sudo openvpn client2.ovpn
+$ sudo openvpn /vagrant/client2.ovpn
+
 ```
 
 3. In a second terminal make sure packets are routed to a machine under the attacker's control
 
 ```bash
 
-$ sudo ip route add 192.169.3.0/24
+$ sudo /vagrant/add_route.sh 
 
 ```
 
@@ -159,24 +161,53 @@ $ sudo ip route add 192.169.3.0/24
 
 ```bash
 
-sudo ./udp_portscan_internal.sh
+sudo /vagrant/udp_portscan_internal.sh
 
 ```
 
 5. SSH to `router1`
 
 ```bash
+
 $ vagrant ssh router1
+
 ```
 
 6. Send packets from `router1` to `vpnserver` that match `attacker`'s packets from step 4.
 
 ```bash
-$ sudo ./udp_portscan_external.sh
+
+$ sudo /vagrant/udp_portscan_external.sh
+
 ```
 
 7.  Disconnect `attacker` from the VPN server (Ctrl-c in the terminal from Step 2.)
 
+8. SSH into `victim`
+
+```bash
+
+$ vagrant ssh victim
+
+```
+
+9. Connect to `vpnserver` from `victim`
+
+```bash
+
+$ cd /vagrant
+
+$ sudo openvpn /vagrant/client1.ovpn
+
+```
+
+10. Add a route to make sure response packets are sent through `vpnserver`
+
+```bash
+
+$ sudo /vagrant/add_route.sh
+
+```
 
 
 
