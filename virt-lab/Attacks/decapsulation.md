@@ -5,7 +5,6 @@
 
 ```bash
 $ ./boot_all.sh
-
 ```
 
 2. SSH to the Attacker
@@ -17,9 +16,7 @@ $ vagrant ssh attacker
 3. Connect to the VPN server
 
 ```bash
-
 $ cd /vagrant/
-
 $ sudo openvpn client2.ovpn
 ```
 
@@ -33,15 +30,12 @@ $ sudo ip route add 192.168.1.0/24 dev tun0
 
 
 ```bash
-$ sudo iptables -t nat -A PREROUTING -p tcp --dport 80 -j DNAT --to-destination 192.168.254.4
+$ sudo iptables -t nat -A PREROUTING -p tcp --dport 80 -j DNAT --to-destination 192.168.254.3
 ```
 
 6. Run the decapsulation script to create the port shadow on attacker 1.
 
 ```bash
-
 $ cd /vagrant/client-to-mitm/src/
-
 $ sudo ./start-decapsulation.sh
-
 ```
