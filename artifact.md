@@ -8,7 +8,7 @@ Requested Badge: **Reproducible**
 
 ## Description
 
-This artifact covers the four attacker against VPNs described in our paper. These are minimal examples intended for ease of reproduction. The three attacks, `ATIP`, `decapsulation`, and `port scan` are relatively easy to verify, `eviction reroute` may take some effort, though we have done as much as possible to ease that effort.
+This artifact covers the four attacker against VPNs described in our paper. There are two different sets of code, one related to the attack proof-of-concepts, in the `virt-lab` directory, and one for the formal model code in the `Tla` directory. For the attack code, the three attacks, `ATIP`, `decapsulation`, and `port scan` are relatively easy to verify. The `eviction reroute` may take some effort and because of this we have included a packet capture of a successful attack against WireGuard under the `data/eviction-reroute/` directory.
 
 ### Security/Privacy Issues and Ethical Concerns
 
@@ -19,24 +19,37 @@ vulnerability disclosure, which we have already performed.
 
 ### Hardware Requirements
 
+#### Attack Code
+
 This environment has been tested on an Ubuntu 20.04 laptop with 16 GB RAM and 4 CPU cores. The total memory consumption is 10 GB RAM. Each VM is built from a 42GB VDI, but the total storage footprint should be less than that. 
+
+#### Formal Model
+
+The minimum working examples of the formal model was run on the same hardware as the attack code. For the paper, we ran the code with a depth of 9 which generates over 2 million states. This depth was tested on a machine with 250 GB RAM.
 
 ### Software Requirements: 
 
-Describe the OS and software packages required to evaluate your artifact.
-This description is essential if you rely on proprietary software or software that might not be easily accessible for other reasons.
-Describe how the reviewer can obtain and install all third-party software, data sets, and models.
+#### Attack Code
+
+The attack were tested on an Ubuntu 20.04 host running VirtualBox for virtualization and Vagrant for provisioning the test environment.
+Vagrant is a software for provisioning virtual machines. VirtualBox is used as for the testing enironment.
+
+#### Formal Model
+
+The formal models were tested on an Ubuntu 20.04 OS and require the TLA+ toolbox. Instructions for downloading
+and installing the TLA+ toolbox can be found [here](https://lamport.azurewebsites.net/tla/toolbox.html).
 
 ### Estimated Time and Storage Consumption
 
+#### Attack Code
+
 It should take between 5-15 minutes to verify each of the `ATIP`, `decapsulation`, and `port scan` attacks, so 15-45 minutes. The `eviction reroute` attack could take much longer. The average time to success was about 30 minutes, but some of the runs took much longer, on the order of an hour or more of manually switching between VMs, running code, etc.
 
+#### Formal Model
+
+The provided examples should run in under 10 minutes and will not consume more than 10 GB memory.
+
 ## Environment
-
-This artifact contains code to implement the four attacks covered in the paper.
-
-The attack code is run in a virtual environment that is setup and configured using Vagrant.
-The provisioning code has only been tested on a Ubuntu 20.04 operating system.
 
 ### Accessibility
 
@@ -48,7 +61,12 @@ $ git clone https://github.com/bmixonba/network-alchemy-dev.git
 
 ```
 
-### Set up the environment
+### Attack Code
+
+This artifact contains code to implement the four attacks covered in the paper.
+The attack code is run in a virtual environment that is setup and configured using Vagrant.
+The provisioning code has only been tested on a Ubuntu 20.04 operating system.
+#### Set up the environment
 
 The attack code can be run inside a virtual environment generated using the `Vagrantfile` (`virt-lab/Vagrantfile`). Use
 the `boot_all.sh` script to build the environment.
@@ -68,41 +86,97 @@ $ vagrant ssh attacker
 ```
 There are more detailed instructions for performing the attacks in `virt-lab/README.md`
 
-### Testing the Environment
+#### Testing the Environment
 
 There are four attacks total, `atip`, `decapsulation`, `eviction reroute`, and `port scan`. To ease reproduction, we have provided
 detailed instructions for each attack in `virt-lab/README.md`
+
+### Formal Model
+
+The formal model code, as stated above, is run in the Tla+ toolbox.
+
+#### Formal Model Environment
+
+This section will detail how to setup the formal models after you have downloaded and installed TLA+ Toolkit.
+
+The general setup remains the same for the attacks. However, the invariants are different for each attack.
+
+The common steps are detailed below.
+1. Open up the `.tla` file of interest in the TLA+ Toolbox.
+2. On the left side, right-click on `models` and select `New Model`. Name the model and create it.
+3. Expand the `Invariants` section and choose to add a new invariant.
+4. The invariant to be added varies for each attack.
+5. Click the green play button at the top to start model checking.
+6. Allow the model checking to complete and the verify if invariant is violated or not.
 
 ## Artifact Evaluation
 
 ### Main Results and Claims
 
-Our paper covers four attacks against VPNs, such as OpenVPN, that use stateful connection tracking. The four attacks are `atip`, `decapsulation`, `eviction reroute`, and `port scan`. We also tested mitigations for these attacks using formal modelling.
+#### Attack Code
+
+Our paper covers four attacks against Layer 3 VPNs, such as OpenVPN, that use stateful connection tracking.
+ The four attacks are `atip`, `decapsulation`, `eviction reroute`, and `port scan`. 
+
+#### Formal Model
+
+We also tested mitigations for these attacks using formal modeling. Each attack has two accompanying formal models. One
+that is vulnerable and another that is fixed. When running the Tla+ model checker on the provided models, 
+the vulnerable version will terminate early and indicate the invariant was violated. The fixed version will run to
+completion and indicate theu were successful.
 
 #### Main Result 1: ATIP 
+
+The following provides instructions for reproducing the ATIP attack. The first subsection covers running the proof-of-concept
+code in the virtual environment. The second subsection covers running the formal model code.
+
+##### Attack Code: ATIP
 
 The ATIP attack, described in section 3.1, permits an attacker connected to the VPN server to force a victim's VPN connection request
 to be routed to them. When this happens, all the victims packets are routed through the attacker. The results are described in section 4.2.1.
 
+##### Formal Model: ATIP
+
+The formal model is described in Section  5.1.1.
+
 #### Main Result 2: Decasulation
+
+#####  Attack Code: Decasulation
 
 The decaspsulation attack, described in section 3.2., permits an attacker to redirect a victim's packets to himself unenrypted. The
 results are described in section 4.2.4.
 
+##### Formal Model: Decasulation
+
+The formal model decapsulation attack/mitigations are described in section 5.1.1.
+
 #### Main Result 3: Eviction Reroute 
+
+#####  Attack Code: Eviction Reroute
 
 The eviction reroute attack, described in section 3.3, permits an attacker to force replies meant for the victim to himself instead. The results are described in 4.2.5.
 
+##### Formal Model
+
+The formal model decapsulation attack/mitigations are described in the last paragraph of section 5.1.1.
+
 #### Main Result 4: Port Scan
+
+#####  Attack Code: Port Scan
 
 The port scan attack, described in section 3.4, permits an attacker to port scan a victim behind the VPN server. The results are described in section 4.2.6.
 
+##### Formal Model: Port Scan
+
+The formal model decapsulation attack/mitigations are described in the second to last paragraph of section 5.1.1.
+
 ### Experiments
 
+The following
+
 #### Experiment 1: ATIP
-Provide a short explanation of the experiment and expected results.
-Describe thoroughly the steps to perform the experiment and to collect and organize the results as expected from your paper.
-Use code segments to support the reviewers, e.g.,
+
+#####  Attack
 
 This experiment demonstrates the `ATIP` attack, which allows an attacker to escalate from adjacent to in-path between a VPN server and client.This is achieved by overwritting the port that the VPN server normally listens on (typically 1194). The client/victim's VPN connection request is then routed to the attacker instead of being processed by the VPN server as it normally should be.
 
@@ -241,7 +315,24 @@ $ /vagrant/mitigate_atip.sh # sudo -A POSTROUTING -s 10.0.0.0/8  -j SNAT --to-so
 
 4. If you repeat the attack now, it will fail.
 
+
+##### Formal Model
+
+The vulnerable ATIP model code is in `Tla/conntrack/conntrackVulnATIP.tla`
+
+The fixed ATIP model code is in `Tla/conntrack/conntrackFixedATIP.tla`
+
+Add the following invariant for the ATIP attack.
+
+```
+ATIPInv=FALSE
+```
+
+Run the model checker as described above.
+
 #### Experiment 2: Decapsulation
+
+##### Attack code
 
 The decapsulation attack allows an attacker to remove the encryption normally provided by the VPN server by abusing how routing works on Linux. Specifically, if a VPN client sends a packet with a destination IP equal to the VPN server IP, then the packet is sent directly to the vpn server without encryption. 
 
@@ -345,7 +436,25 @@ listening on any, link-type LINUX_SLL (Linux cooked v1), capture size 262144 byt
 
 This is incorrect, as 192.168.1.254 should be encapsulated in the VPN tunnel, but it is not. If you perform a `tcpdump` on `attacker`, you will see something similar.
 
+##### Formal Model
+
+The vulnerable Decapsulation model code is in `Tla/conntrack/conntrackVulnDecap.tla`
+
+The fixed Decapsulation model code is in `Tla/conntrack/conntrackFixedDecap.tla`
+
+Add the following invariant for the Decapsulation attack.
+
+```
+DecapInv=FALSE
+```
+
+Run the model checker as described above.
+
 #### Experiment 3: Eviction Reroute 
+
+The following covers reproducing the results for the attack code, followed by the formal model related results.
+
+##### Attack code
 
 The eviction reroute attack exploits the fact that the connection tracking table, where NAT translations are stored, is a shared resources. If a victim sends a packet, such as a DNS request, through the VPN server, then an attacker can force the entry to be evicted by filling the table and then replacing the victim's entry with his own entry. The response will then be routed to the attacker instead of the victim. 
 
@@ -440,7 +549,25 @@ $ sudo ./eviction_reroute.sh
 ```
 11. If you run `conntrack -L` on `vpnserver` again, and find the matching entry in the reply direction, you will eventually see that the source IP in the original direction has been replaced by the attackers. This indicates the victim's entry was replaced by the attackers.
 
+##### Formal Model: Eviction Reroute
+
+The vulnerable Eviction Reroute model code is in `Tla/conntrack/conntrackVulnReroute.tla`
+
+The fixed Eviction Reroute model code is in `Tla/conntrack/conntrackFixedReroute.tla`
+
+Add the following invariant for the Eviction Reroute attack.
+
+```
+EvictionReroute=FALSE
+```
+
+Run the model checker as described above.
+
 #### Experiment 4: Port Scan
+
+This section provides instructions for reproducing the Port Scan attack, followed by the formal model implementation
+
+##### Attack code: Port Scan
 
 The following steps will reproduce the attack. 
 
@@ -524,6 +651,18 @@ $ sudo /vagrant/add_route.sh
 
 11. If you look on the `router1` terminal, you should see ICMP `port unreachable` messages. If you take
 a packet capture on `victim` you should see the packets from `router1` being sent to the victim. This confirms the attack.
+
+##### Formal Model: Port Scan 
+
+The vulnerable Port Scan model code is in `Tla/conntrack/conntrackVulnReroute.tla`
+
+The fixed Port Scan model code is in `Tla/conntrack/conntrackFixedReroute.tla`
+
+Add the following invariant for the Eviction Reroute attack.
+
+```
+PortScanInv=FALSE
+```
 
 ## Limitations
 
