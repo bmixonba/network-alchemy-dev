@@ -261,7 +261,7 @@ $ vagrant ssh vpnserver
 
 ```
 
-2. Delete the old `MASQUERADE` rule
+2. Delete the old insecure `MASQUERADE` rule
 
 ```bash
 
@@ -284,17 +284,194 @@ $ /vagrant/mitigate_atip.sh # sudo -A POSTROUTING -s 10.0.0.0/8  -j SNAT --to-so
 
 #### Experiment 2: Decapsulation
 
+To reproduce the decapsulation attack, execute the following steps.
+
+1. SSH to `victim`
+
+``` bash
+
+$ vagrant ssh victim
+
+```
+2. Added the following to `victim`'s `/etc/hosts` file to simulate having its DNS cache poisoned.
+
+```bash
+
+$ sudo ./simulate_dns_poisoning.sh 
+
+```
+
+3. Connect to the VPN server. 
+
+```bash
+
+$ cd /vagrant/
+
+$ sudo openvpn /vagrant/client1.ovpn
+
+```
+
+4. SSH into `attacker`
+
+```bash
+
+$ vagrant ssh attacker
+
+```
+
+5. Connect to `vpnserver` from `attacker`
+
+```bash
+
+$ cd /vagrant
+
+$ sudo openvpn /vagrant/client2.ovpn
+
+```
+
+6. Setup DNAT rule
+
+```bash
+
+$ sudo /vagrant/add_decap_dnat.sh
+
+```
+
+6. Add route to `victim`
+
+```bash
+
+$ /vagrant/add_victim_route.sh
+
+```
+
+7. Build attack code
+
+```bash
+
+$ cd /vagrant/client-to-mitm/src
+
+$ make decapsulation
+
+```
+
+8. Start the attack code.
+
+```bash
+
+$ /vagrant/client-to-mitm/src/start-decapsulation.sh
+
+```
+
+9. Get the website `foo.com` from `victim`
+
+```bash
+
+$ wget foo.com
+
+```
+
+10. The request will be sent to be sent to `attacker` in plain text. If you take a packet capture
+from `router`, you will see the SYN request in the clear, for example.
+
+```bash
+root@router1:/home/vagrant# tcpdump -ni any not port 22                                                                                       
+tcpdump: verbose output suppressed, use -v or -vv for full protocol decode                                                                    
+listening on any, link-type LINUX_SLL (Linux cooked v1), capture size 262144 bytes                                                            
+23:37:40.747094 IP 192.168.1.254.57136 > 192.168.2.254.80: Flags [S], seq 4001290197, win 64240, options [mss 1460,sackOK,TS val 885599970 ecr
+ 0,nop,wscale 7], length 0
+```
+
+This is incorrect, as 192.168.1.254 should be encapsulated in the VPN tunnel, but it is not. 
+
+
 ##### Attack code
 
 #### Experiment 3: Eviction Reroute 
+The following steps will reproduce the attack. 
+
+WARNING: This attack involves a lot of patience and more manual intervention on
+the reviewer's part than the other attacks because the attacker cannot precisely control the entries in the table.
 
 ##### Attack Code
 
+0. Connect to `vpnserver` from `victim`
+
+```bash
+
+$ sudo openvpn /vagrant/client1.ovpn
+
+```
+
+1. SSH into `router1`
+
+```bash
+
+$  vagrant ssh router1
+
+```
+
+2. Start the table filling code.
+
+```
+
+$ cd /vagrant/
+
+$ make fill_table
+
+$ sudo ./fill_table enp0s8
+
+```
+
+3. SSH into `attacker`
+
+```bash
+
+$ vagrant ssh attacker
+
+```
+
+4. Connect to `vpnserver` from `attacker`
+
+```bash
+
+$ sudo openvpn /vagrant/client2.ovpn
+
+```
+
+5. Start the attacker side of the code
+
+$ cd /vagrant/
+
+$ make fill_table
+
+$ sudo ./fill_table enp0s8
+
+```
+
+6. Added a route
+
+```bash
+
+$ ./add_route.sh
+
+``` 
+
+7. Download a non-existant page
+
+```bash
+
+$ ./get_webpage.sh
+
+```
+
+
+
 ##### Formal Model
 
-#### Experiment 3: Port Scan
+#### Experiment 4: Port Scan
 
-The following steps will reproduce the attack.
+The following steps will reproduce the attack. 
 
 1. SSH into `attacker`
 

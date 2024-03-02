@@ -34,6 +34,8 @@ basic-http-server:
 
 fill_udp_ports:
 	g++ -O3 -o fill_udp_ports fill_udp_ports.cpp -lpthread -ltins -std=c++11
+fill_table:
+	g++ -O3 -o fill_table fill_table.cpp -lpthread -ltins -std=c++11
 
 txid-bruteforce:
 	g++ -O3 -o txid-bruteforce txid-bruteforce.cpp -lpthread -ltins -std=c++11
