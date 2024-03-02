@@ -5,6 +5,7 @@ sudo apt-get update
 sudo apt install nmap conntrack
 
 sed -i "s/#VAGRANT-END/up route add -net 192.168.0.0\/16 gw 192.168.1.254 dev enp0s8/g" /etc/network/interfaces
+sudo /vagrant/setup_attacker.sh
 # /vagrant/remove_ipv6.sh
 # sudo ip -6 route flush table all
 sudo cp /vagrant/50-vagrant.yaml /etc/netplan/

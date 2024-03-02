@@ -7,7 +7,8 @@ Artifacts HotCRP Id: **#161**
 Requested Badge: **Reproducible**
 
 ## Description
-A short description of your artifact and how it links to your paper.
+
+This artifact covers the four attacker against VPNs described in our paper. These are minimal examples intended for ease of reproduction. The three attacks, `ATIP`, `decapsulation`, and `port scan` are relatively easy to verify, `eviction reroute` may take some effort, though we have done as much as possible to ease that effort.
 
 ### Security/Privacy Issues and Ethical Concerns
 
@@ -16,57 +17,38 @@ vulnerability disclosure, which we have already performed.
 
 ## Basic Requirements
 
-### Hardware Requirements: Attack Code
+### Hardware Requirements
 
-If your artifacts require specific hardware to be executed, mention that here.
-Provide instructions on how a reviewer can gain access to that hardware through remote access, buying or renting, or even emulating the hardware.
-Make sure to preserve the anonymity of the reviewer at any time.
-
-
-### Hardware Requirements: Formal Model 
-
-If your artifacts require specific hardware to be executed, mention that here.
-Provide instructions on how a reviewer can gain access to that hardware through remote access, buying or renting, or even emulating the hardware.
-Make sure to preserve the anonymity of the reviewer at any time.
+This environment has been tested on an Ubuntu 20.04 laptop with 16 GB RAM and 4 CPU cores. The total memory consumption is 10 GB RAM. Each VM is built from a 42GB VDI, but the total storage footprint should be less than that. 
 
 ### Software Requirements: 
 
-#### Attack Code
-Describe the OS and software packages required to evaluate your artifact.
-This description is essential if you rely on proprietary software or software that might not be easily accessible for other reasons.
-Describe how the reviewer can obtain and install all third-party software, data sets, and models.
-
-
-#### Formal Model
 Describe the OS and software packages required to evaluate your artifact.
 This description is essential if you rely on proprietary software or software that might not be easily accessible for other reasons.
 Describe how the reviewer can obtain and install all third-party software, data sets, and models.
 
 ### Estimated Time and Storage Consumption
-Provide an estimated value for the time the evaluation will take and the space on the disk it will consume. 
-This helps reviewers to schedule the evaluation in their time plan and to see if everything is running as intended.
-More specifically, a reviewer, who knows that the evaluation might take 10 hours, does not expect an error if,  after 1 hour, the computer is still calculating things.
+
+It should take between 5-15 minutes to verify each of the `ATIP`, `decapsulation`, and `port scan` attacks, so 15-45 minutes. The `eviction reroute` attack could take much longer. The average time to success was about 30 minutes, but some of the runs took much longer, on the order of an hour or more of manually switching between VMs, running code, etc.
 
 ## Environment
 
-This artifact contains two components attack code and formal model code.
+This artifact contains code to implement the four attacks covered in the paper.
 
 The attack code is run in a virtual environment that is setup and configured using Vagrant.
 The provisioning code has only been tested on a Ubuntu 20.04 operating system.
-
-The formal model code requires the TLA+ toolbox, which can be found [here](https://lamport.azurewebsites.net/tla/toolbox.html) under the `Obtaining the Toolbox` section. The code has only been tested on an Ubuntu 20.04 operating system.
 
 ### Accessibility
 
 The artifact can be found at the following github [link](https://github.com/bmixonba/network-alchemy-dev) on the main branch.
 
 ```bash
+
 $ git clone https://github.com/bmixonba/network-alchemy-dev.git
+
 ```
 
 ### Set up the environment
-
-#### Attack Code
 
 The attack code can be run inside a virtual environment generated using the `Vagrantfile` (`virt-lab/Vagrantfile`). Use
 the `boot_all.sh` script to build the environment.
@@ -88,31 +70,19 @@ There are more detailed instructions for performing the attacks in `virt-lab/REA
 
 ### Testing the Environment
 
-#### Attack Code
 There are four attacks total, `atip`, `decapsulation`, `eviction reroute`, and `port scan`. To ease reproduction, we have provided
 detailed instructions for each attack in `virt-lab/README.md`
-
-#### Formal Model
-
-Each attack has an accompanying formal model associated with it in the `Tla` directory.
 
 ## Artifact Evaluation
 
 ### Main Results and Claims
-List all your paper's main results and claims that are supported by your submitted artifacts.
 
 Our paper covers four attacks against VPNs, such as OpenVPN, that use stateful connection tracking. The four attacks are `atip`, `decapsulation`, `eviction reroute`, and `port scan`. We also tested mitigations for these attacks using formal modelling.
 
 #### Main Result 1: ATIP 
 
-##### Attack code
-
 The ATIP attack, described in section 3.1, permits an attacker connected to the VPN server to force a victim's VPN connection request
 to be routed to them. When this happens, all the victims packets are routed through the attacker. The results are described in section 4.2.1.
-
-##### Formal Model
-
-The formal model tests mitigations against the ATIP attack.
 
 #### Main Result 2: Decasulation
 
@@ -127,26 +97,17 @@ The eviction reroute attack, described in section 3.3, permits an attacker to fo
 
 The port scan attack, described in section 3.4, permits an attacker to port scan a victim behind the VPN server. The results are described in section 4.2.6.
 
-##### Attack code
-
-
-
 ### Experiments
-List each experiment the reviewer has to execute. Describe:
- - How to execute it in detailed steps.
- - What the expected result is.
- - How long it takes and how much space it consumes on disk. (approximately)
- - Which claim and results does it support, and how.
 
 #### Experiment 1: ATIP
 Provide a short explanation of the experiment and expected results.
 Describe thoroughly the steps to perform the experiment and to collect and organize the results as expected from your paper.
 Use code segments to support the reviewers, e.g.,
-```bash
-python experiment_1.py
-```
 
-To reproduce the ATIP attack, execute the following steps:
+This experiment demonstrates the `ATIP` attack, which allows an attacker to escalate from adjacent to in-path between a VPN server and client.This is achieved by overwritting the port that the VPN server normally listens on (typically 1194). The client/victim's VPN connection request is then routed to the attacker instead of being processed by the VPN server as it normally should be.
+
+
+To reproduce the `ATIP` attack, execute the following steps:
 
 1. Connect to `attacker`
 
@@ -280,9 +241,9 @@ $ /vagrant/mitigate_atip.sh # sudo -A POSTROUTING -s 10.0.0.0/8  -j SNAT --to-so
 
 4. If you repeat the attack now, it will fail.
 
-##### Formal Model
-
 #### Experiment 2: Decapsulation
+
+The decapsulation attack allows an attacker to remove the encryption normally provided by the VPN server by abusing how routing works on Linux. Specifically, if a VPN client sends a packet with a destination IP equal to the VPN server IP, then the packet is sent directly to the vpn server without encryption. 
 
 To reproduce the decapsulation attack, execute the following steps.
 
@@ -382,20 +343,28 @@ listening on any, link-type LINUX_SLL (Linux cooked v1), capture size 262144 byt
  0,nop,wscale 7], length 0
 ```
 
-This is incorrect, as 192.168.1.254 should be encapsulated in the VPN tunnel, but it is not. 
-
-
-##### Attack code
+This is incorrect, as 192.168.1.254 should be encapsulated in the VPN tunnel, but it is not. If you perform a `tcpdump` on `attacker`, you will see something similar.
 
 #### Experiment 3: Eviction Reroute 
+
+The eviction reroute attack exploits the fact that the connection tracking table, where NAT translations are stored, is a shared resources. If a victim sends a packet, such as a DNS request, through the VPN server, then an attacker can force the entry to be evicted by filling the table and then replacing the victim's entry with his own entry. The response will then be routed to the attacker instead of the victim. 
+
 The following steps will reproduce the attack. 
 
-WARNING: This attack involves a lot of patience and more manual intervention on
-the reviewer's part than the other attacks because the attacker cannot precisely control the entries in the table.
+**NOTE: This attack involves a lot of patience and more manual intervention on
+the reviewer's part than the other attacks because the attacker cannot precisely 
+control the entries in the table. We have provided a pcap as well that demonstrates
+the attack.** 
 
-##### Attack Code
+0.
 
-0. Connect to `vpnserver` from `victim`
+```bash
+
+$ vagrant ssh victim
+
+```
+
+1. Connect to `vpnserver` from `victim`
 
 ```bash
 
@@ -403,7 +372,23 @@ $ sudo openvpn /vagrant/client1.ovpn
 
 ```
 
-1. SSH into `router1`
+2. Prep the environment in the client
+
+```bash
+
+$ sudo /vagrant/prep_eviction_reroute.sh
+
+```
+
+3. From `victim` try to get the site, `bar.com`. This will create an entry in `vpnserver`'s connection tracking table, that you can view by execution `conntrack -L` on `vpnserver` and finding `victim`' entry.
+
+```bash
+
+$ wget bar.com
+
+```
+
+4. SSH into `router1`
 
 ```bash
 
@@ -411,19 +396,17 @@ $  vagrant ssh router1
 
 ```
 
-2. Start the table filling code.
+5. Start the table filling code.
 
 ```
 
 $ cd /vagrant/
 
-$ make fill_table
-
-$ sudo ./fill_table enp0s8
+$ sudo /vagrant/eviction_reroute.sh
 
 ```
 
-3. SSH into `attacker`
+6. SSH into `attacker`
 
 ```bash
 
@@ -431,7 +414,7 @@ $ vagrant ssh attacker
 
 ```
 
-4. Connect to `vpnserver` from `attacker`
+7. Connect to `vpnserver` from `attacker`
 
 ```bash
 
@@ -439,35 +422,23 @@ $ sudo openvpn /vagrant/client2.ovpn
 
 ```
 
-5. Start the attacker side of the code
-
-$ cd /vagrant/
-
-$ make fill_table
-
-$ sudo ./fill_table enp0s8
-
-```
-
-6. Added a route
+8. Configure routes
 
 ```bash
 
 $ ./add_route.sh
-
-``` 
-
-7. Download a non-existant page
-
-```bash
-
-$ ./get_webpage.sh
+$ ./add_victim_route.sh
 
 ```
 
+9. Start the attacker side of the code
 
+$ cd /vagrant/client-to-mitm/src
 
-##### Formal Model
+$ sudo ./eviction_reroute.sh
+
+```
+11. If you run `conntrack -L` on `vpnserver` again, and find the matching entry in the reply direction, you will eventually see that the source IP in the original direction has been replaced by the attackers. This indicates the victim's entry was replaced by the attackers.
 
 #### Experiment 4: Port Scan
 
@@ -554,9 +525,6 @@ $ sudo /vagrant/add_route.sh
 11. If you look on the `router1` terminal, you should see ICMP `port unreachable` messages. If you take
 a packet capture on `victim` you should see the packets from `router1` being sent to the victim. This confirms the attack.
 
-
-...
-
 ## Limitations
 
 ### OpenVPN and Linux Only
@@ -567,7 +535,6 @@ We included only OpenVPN as the VPN target, though our results also include Wire
 We tested the attacks against both IPv4 and IPv6. We include only IPv4 in this artifact for two reasons. First, because the connection tracking frameworks are shared between IPv4 and IPv6 testing both is redundent. Second, we encountered several issues when configuing IPv6 interfaces and routing that we cannot currently attribute to a cause but that make building the testing environment and code more labor intensive. 
 
 We plan to include WireGuard, OpenConnect, and IPv6 support in future iterations of this framework.
-
 
 ## Notes on Reusability
 
