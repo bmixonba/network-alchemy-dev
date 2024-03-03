@@ -5,7 +5,7 @@
 
 
 apt-get update
-sudo apt-get install openvpn
+sudo apt-get install openvpn nmap
 sudo apt install net-tools hping3
 # /vagrant/remove_ipv6.sh
 
