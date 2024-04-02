@@ -73,7 +73,7 @@ the `boot_all.sh` script to build the environment.
 
 ```bash
 $ git clone https://github.com/bmixonba/network-alchemy-dev.git
-$ cd network-alchemy-dev/virt-env/
+$ cd network-alchemy-dev/virt-lab/
 $ ./boot_all.sh
 ```
 
