@@ -1,4 +1,4 @@
-# Artifact Appendix
+# README 
 
 Paper title: **Attacking Connection Tracking Frameworks as used by Virtual Private Networks**
 
