@@ -123,11 +123,39 @@ Vagrant.configure("2") do |config|
     # a.vm.network "private_network", ip: "192.168.2.250", virtualbox__intnet: "intnet-2"
     a.vm.provider :virtualbox do |v|
       v.customize ["modifyvm", :id, "--natdnshostresolver1", "on"]
-      v.customize ["modifyvm", :id, "--memory", 2048]
+      v.customize ["modifyvm", :id, "--memory", 4096]
       v.customize ["modifyvm", :id, "--cpus", "4"]  
       v.customize ["modifyvm", :id, "--name", "vpnserver"]
     end
     a.vm.provision :shell, path: "./edgers/vpn-server/setup_net.sh"
     a.vm.synced_folder  "./edgers/vpn-server/", "/vagrant", disabled: false
   end
+
+  
+  ## Configure the Web/DNS server 
+  config.vm.define "webdnsserver" do |a|
+    # a.vm.box = "ubuntu/bionic64"
+    a.vm.box = "ubuntu/focal64"
+    a.vm.hostname = 'webdnsserver'
+    a.vm.boot_timeout = 600
+    a.vm.network "forwarded_port", guest: 22, host: 22116, id: 'ssh'
+    a.ssh.insert_key = true
+
+    a.vm.network "private_network", ip: "192.168.3.254", virtualbox__intnet: "intnet-3", auto_config: false # To router1 
+    # a.vm.network "private_network", ip: "fd12:2345:6789:3::fe", virtualbox__intnet: "intnet-3"
+    
+    a.vm.provider :virtualbox do |v|
+      v.customize ["modifyvm", :id, "--natdnshostresolver1", "on"]
+      v.customize ["modifyvm", :id, "--memory", 1024]
+      v.customize ["modifyvm", :id, "--cpus", "2"]  
+      v.customize ["modifyvm", :id, "--name", "webdnsserver"]
+    end
+    
+    a.vm.provision :shell, path: "./edgers/web-server/setup_net.sh"
+    a.vm.provision :shell, path: "./edgers/web-server/dns/install_docker.sh"
+    a.vm.provision :shell, path: "./edgers/web-server/dns/start_dns.sh"
+    a.vm.provision :shell, path: "./edgers/web-server/setup_libtins.sh"
+    a.vm.synced_folder  "./edgers/web-server/", "/vagrant", disabled: false
+  end
+
 end
