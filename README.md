@@ -118,6 +118,9 @@ The common steps are detailed below.
 Our paper covers four attacks against Layer 3 VPNs, such as OpenVPN, that use stateful connection tracking.
  The four attacks are `atip`, `decapsulation`, `eviction reroute`, and `port scan`. 
 
+Before beginning, please run the `install_deps.sh` script to install vagrant and virtualbox onto an Ubuntu host.
+
+
 #### Formal Model
 
 We also tested mitigations for these attacks using formal modeling. Each attack has two accompanying formal models. One
