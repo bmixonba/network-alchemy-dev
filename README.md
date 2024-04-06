@@ -31,7 +31,7 @@ The minimum working examples of the formal model was run on the same hardware as
 
 #### Attack Code
 
-The attack were tested on an Ubuntu 20.04 host running VirtualBox for virtualization and Vagrant for provisioning the test environment.
+The attack were tested on an Ubuntu 20.04 host running VirtualBox 6.1.50\_Ubuntur161033 for virtualization and Vagrant 2.4.1 for provisioning the test environment.
 Vagrant is a software for provisioning virtual machines. VirtualBox is used as for the testing enironment.
 
 #### Formal Model
